@@ -43,7 +43,7 @@
 
 (define bm (read-bitmap "fotos/base.jpg"))
 
-
+(define create-table
 (for ((i (in-range 169)))
   (let ((child (new panel%
              [parent table-panel]
@@ -53,12 +53,14 @@
     (instantiate button%
         ((read-bitmap (list-ref list-of-image i) )
          child)  [callback (lambda (button event)
-                         (button-click i))])
-    ))
+                         (button-click i (list-ref list-of-image i)))])
+    )))
 
-(define (button-click i)
+(define (button-click i color)
     (cond
      [(false? first-click) (set! first-click #t) (set! second-click #f) (set! first-position i) (set! second-position 0)]
      [else (set! first-click #f)(set! second-click #t)(set! second-position i) (set! first-position 0)] ))
+
+;(define change-color (list-set list-of-image first-position (list-ref list-of-image second-position)))
 
 (send frame show #t)
