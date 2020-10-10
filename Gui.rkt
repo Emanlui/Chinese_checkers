@@ -58,7 +58,7 @@
 
 ; Change the color on the matrix
 (define (change-color)
-  (cond [(not(equal? first-position second-position))
+  (cond [(and (validate-move) (not(equal? first-position second-position)) (not(equal? (list-ref list-of-image first-position) black)))
   ; Sets the temp color of the buttons on variables
   (set! first-tmp-color (list-ref list-of-image first-position)) (set! second-tmp-color (list-ref list-of-image second-position))
   ; Sets the data on the matrix depending on the position
@@ -83,11 +83,17 @@
              [label (read-bitmap (list-ref list-of-image index))]
              [callback (lambda (button event) (button-click index (list-ref list-of-image index)))])))
 
+; This function verifies if there is a winner, calling blue-winner and red-winner, if it returns true, then it popups a windows
+; and also disable all buttons
 (define (winner)
   (cond [(not(false? (blue-winner))) (disable-buttons) (define dialog (new dialog% [label "Winner winner chicken dinner"][height 200][width 200]))
   (define msg (new message% [parent dialog]
-                          [label "Blue player wins"]))(send dialog show #t)  ]))
+                          [label "Blue player wins"]))(send dialog show #t)  ]
+        [(not(false? (red-winner))) (disable-buttons) (define dialog (new dialog% [label "Winner winner chicken dinner"][height 200][width 200]))
+  (define msg (new message% [parent dialog]
+                          [label "Red player wins"]))(send dialog show #t)  ]))
 
+; This function disable all buttons
 (define (disable-buttons)
   (for ([j (send board get-children)]) ; iterator binding
   (send (list-ref (send j get-children) 0) enable #f)))
@@ -95,9 +101,54 @@
 ; This function verifies if the blue side won
 (define (blue-winner)
   (cond[
-        (not(false? ( and (equal? (list-ref list-of-image 50) blue)))) #t]
+        (not(false? ( or (equal? (list-ref list-of-image 45) blue)
+                          (equal? (list-ref list-of-image 55) blue)
+                          (equal? (list-ref list-of-image 54) blue)
+                          (equal? (list-ref list-of-image 63) blue)
+                          (equal? (list-ref list-of-image 64) blue)
+                          (equal? (list-ref list-of-image 65) blue)
+                          (equal? (list-ref list-of-image 72) blue)
+                          (equal? (list-ref list-of-image 73) blue)
+                          (equal? (list-ref list-of-image 74) blue)
+                          (equal? (list-ref list-of-image 75) blue)))) #t]
        [else #f]))
+
 ; This function verifies if the red side won
+(define (red-winner)
+  (cond[
+        (not(false? ( and (equal? (list-ref list-of-image 5) red)
+                          (equal? (list-ref list-of-image 6) red)
+                          (equal? (list-ref list-of-image 7) red)
+                          (equal? (list-ref list-of-image 8) red)
+                          (equal? (list-ref list-of-image 15) red)
+                          (equal? (list-ref list-of-image 16) red)
+                          (equal? (list-ref list-of-image 17) red)
+                          (equal? (list-ref list-of-image 25) red)
+                          (equal? (list-ref list-of-image 26) red)
+                          (equal? (list-ref list-of-image 35) red)))) #t]
+       [else #f]))
+
+; This function validates the move
+(define (validate-move)
+  (cond [(or (equal? first-position (+ second-position 10))
+             (equal? first-position (+ second-position 9))
+             (equal? first-position (+ second-position 8))
+             (equal? first-position (+ second-position 1))
+             (equal? first-position (- second-position 1))
+             (equal? first-position (- second-position 8))
+             (equal? first-position (- second-position 9))
+             (equal? first-position (- second-position 10))) #t]
+       [else #f]))
 
 ; Show the frame to the screen
 (send frame show #t)
+
+;  0  1  2  3  4  5  6  7  8
+;  9 10 11 12 13 14 15 16 17
+; 18 19 20 21 22 23 24 25 26
+; 27 28 29 30 31 32 33 34 35
+; 36 37 38 39 40 41 42 43 44
+; 45 46 47 48 49 50 51 52 53
+; 54 55 56 57 58 59 60 61 62
+; 63 64 65 66 67 68 69 70 71
+; 72 73 74 75 76 77 78 79 80
