@@ -4,7 +4,7 @@
 (require table-panel)
 
 (define frame (new frame%
-                 [label "Damas Chinas"]
+                 [label "Chinese checkers"]
                  ;[stretchable-width #f] [stretchable-height #f]
                  [height 700][width 700]
                 ))
@@ -16,12 +16,19 @@
     (alignment '(center center))
     (dimensions '(10 10))))
 
+(define message-turn (new message%
+  [parent frame]
+  [stretchable-width #t]
+  [label "Now its the turn for: "]
+  ))
+
 (define first-click #f)
 (define second-click #f)
 (define first-position 0)
 (define second-position 0)
 (define first-tmp-color "")
 (define second-tmp-color "")
+(define last-move-color "")
 
 (define wood "fotos/wood.png")
 (define black "fotos/black.png")
@@ -33,7 +40,7 @@
         black black black black black black black blue blue blue
         black black black black black black black black blue blue
         black black black black black black black black black blue
-        black black black black black black black black black blue
+        black black black black black black black black black black
         black black black black black black black black black black
         red black black black black black black black black black
         red red black black black black black black black black
@@ -59,7 +66,12 @@
 
 ; Change the color on the matrix
 (define (change-color)
-  (cond [(and (validate-move first-position second-position) (not(equal? first-position second-position)) (not(equal? (list-ref list-of-image first-position) black)))
+  (cond [(and (not(equal? last-move-color (list-ref list-of-image first-position)))(validate-move first-position second-position) (not(equal? first-position second-position)) (not(equal? (list-ref list-of-image first-position) black)))
+
+  ; Change the color label
+  (change-color-turn)
+  ; Sets the new "last-move-color", this variable stores the last button color that was move
+  (set! last-move-color (list-ref list-of-image first-position))
   ; Sets the temp color of the buttons on variables
   (set! first-tmp-color (list-ref list-of-image first-position)) (set! second-tmp-color (list-ref list-of-image second-position))
   ; Sets the data on the matrix depending on the position
@@ -102,44 +114,49 @@
 ; This function verifies if the blue side won
 (define (blue-winner)
   (cond[
-        (not(false? ( or (equal? (list-ref list-of-image 45) blue)
-                          (equal? (list-ref list-of-image 55) blue)
-                          (equal? (list-ref list-of-image 54) blue)
-                          (equal? (list-ref list-of-image 63) blue)
-                          (equal? (list-ref list-of-image 64) blue)
-                          (equal? (list-ref list-of-image 65) blue)
-                          (equal? (list-ref list-of-image 72) blue)
-                          (equal? (list-ref list-of-image 73) blue)
-                          (equal? (list-ref list-of-image 74) blue)
-                          (equal? (list-ref list-of-image 75) blue)))) #t]
+        (not(false? ( or (equal? (list-ref list-of-image 60) blue)
+                          (equal? (list-ref list-of-image 70) blue)
+                          (equal? (list-ref list-of-image 71) blue)
+                          (equal? (list-ref list-of-image 80) blue)
+                          (equal? (list-ref list-of-image 81) blue)
+                          (equal? (list-ref list-of-image 82) blue)
+                          (equal? (list-ref list-of-image 90) blue)
+                          (equal? (list-ref list-of-image 91) blue)
+                          (equal? (list-ref list-of-image 92) blue)
+                          (equal? (list-ref list-of-image 93) blue)))) #t]
        [else #f]))
 
 ; This function verifies if the red side won
 (define (red-winner)
   (cond[
-        (not(false? ( and (equal? (list-ref list-of-image 5) red)
-                          (equal? (list-ref list-of-image 6) red)
+        (not(false? ( and (equal? (list-ref list-of-image 6) red)
                           (equal? (list-ref list-of-image 7) red)
                           (equal? (list-ref list-of-image 8) red)
-                          (equal? (list-ref list-of-image 15) red)
-                          (equal? (list-ref list-of-image 16) red)
+                          (equal? (list-ref list-of-image 9) red)
                           (equal? (list-ref list-of-image 17) red)
-                          (equal? (list-ref list-of-image 25) red)
-                          (equal? (list-ref list-of-image 26) red)
-                          (equal? (list-ref list-of-image 35) red)))) #t]
+                          (equal? (list-ref list-of-image 18) red)
+                          (equal? (list-ref list-of-image 19) red)
+                          (equal? (list-ref list-of-image 28) red)
+                          (equal? (list-ref list-of-image 29) red)
+                          (equal? (list-ref list-of-image 39) red)))) #t]
        [else #f]))
 
 ; This function validates the move
 (define (validate-move x y)
   (cond [(or (equal? x (+ y 10))
-             (equal? x (+ y 9))
+             (and (equal? x (+ y 9)) (not (equal? (modulo y 10) 0) ) );pasar de 39 a 30
              (equal? x (+ y 8))
-             (equal? x (+ y 1))
-             (equal? x (- y 1))
+             (and (equal? x (+ y 1)) (not (equal? (modulo x 10) 0) ) ); pasar de 39 a 40
+             (and(equal? x (- y 1)) (not (equal? (modulo y 10) 0) ) ); pasar de 40 a 39
              (equal? x (- y 8))
-             (equal? x (- y 9))
+             (and (equal? x (- y 9)) (not (equal? (modulo x 10) 0) ) );pasar de 30 a 39
              (equal? x (- y 10))) #t]
-       [else #f]))
+       [else #f])); (not (equal? (- y (- y -9)) 9))
+
+; This function changes the label turn
+(define (change-color-turn)
+  (cond [(equal? last-move-color blue) (send message-turn set-label "Now its the turn for: BLUE")]
+        [(equal? last-move-color red) (send message-turn set-label "Now its the turn for: RED")]))
 
 ; Show the frame to the screen
 (send frame show #t)
