@@ -2,6 +2,7 @@
 
 (require racket/gui/base)
 (require table-panel)
+(include "tree.rkt")
 
 (define frame (new frame%
                  [label "Chinese checkers"]
@@ -143,14 +144,16 @@
 
 ; This function validates the move
 (define (validate-move x y)
-  (cond [(or (equal? x (+ y 10))
+  (cond [(or (equal? x (+ y 11))
+             (equal? x (+ y 10))
              (and (equal? x (+ y 9)) (not (equal? (modulo y 10) 0) ) );pasar de 39 a 30
              (equal? x (+ y 8))
              (and (equal? x (+ y 1)) (not (equal? (modulo x 10) 0) ) ); pasar de 39 a 40
              (and(equal? x (- y 1)) (not (equal? (modulo y 10) 0) ) ); pasar de 40 a 39
              (equal? x (- y 8))
              (and (equal? x (- y 9)) (not (equal? (modulo x 10) 0) ) );pasar de 30 a 39
-             (equal? x (- y 10))) #t]
+             (equal? x (- y 10))
+             (equal? x (- y 11))) #t]
        [else #f])); (not (equal? (- y (- y -9)) 9))
 
 ; This function changes the label turn
