@@ -14,7 +14,7 @@
     (frame)
     (style '(border))
     (alignment '(center center))
-    (dimensions '(9 9))))
+    (dimensions '(10 10))))
 
 (define first-click #f)
 (define second-click #f)
@@ -29,18 +29,19 @@
 (define blue "fotos/blue.png")
 
 (define list-of-image (list
-        black black black black black blue blue blue blue
-        black black black black black black blue blue blue
-        black black black black  black black black blue blue
-        black black black black black black black black blue
-        black black black black  black black black black black
-        red black black black   black black black black black
-        red red black black black   black black black black
-        red red red black black   black black black black
-        red red red red black  black black black black))
+        black black black black black  black blue blue blue blue
+        black black black black black black black blue blue blue
+        black black black black black black black black blue blue
+        black black black black black black black black black blue
+        black black black black black black black black black blue
+        black black black black black black black black black black
+        red black black black black black black black black black
+        red red black black black black black black black black
+        red red red black black black black black black black
+        red red red red black black black black black black))
 
 (define grid-board
-(for ((i (in-range 81)))
+(for ((i (in-range 100)))
   (let ((child (new panel%
              [parent board]
              [style '(border)]
@@ -58,7 +59,7 @@
 
 ; Change the color on the matrix
 (define (change-color)
-  (cond [(and (validate-move) (not(equal? first-position second-position)) (not(equal? (list-ref list-of-image first-position) black)))
+  (cond [(and (validate-move first-position second-position) (not(equal? first-position second-position)) (not(equal? (list-ref list-of-image first-position) black)))
   ; Sets the temp color of the buttons on variables
   (set! first-tmp-color (list-ref list-of-image first-position)) (set! second-tmp-color (list-ref list-of-image second-position))
   ; Sets the data on the matrix depending on the position
@@ -129,26 +130,27 @@
        [else #f]))
 
 ; This function validates the move
-(define (validate-move)
-  (cond [(or (equal? first-position (+ second-position 10))
-             (equal? first-position (+ second-position 9))
-             (equal? first-position (+ second-position 8))
-             (equal? first-position (+ second-position 1))
-             (equal? first-position (- second-position 1))
-             (equal? first-position (- second-position 8))
-             (equal? first-position (- second-position 9))
-             (equal? first-position (- second-position 10))) #t]
+(define (validate-move x y)
+  (cond [(or (equal? x (+ y 10))
+             (equal? x (+ y 9))
+             (equal? x (+ y 8))
+             (equal? x (+ y 1))
+             (equal? x (- y 1))
+             (equal? x (- y 8))
+             (equal? x (- y 9))
+             (equal? x (- y 10))) #t]
        [else #f]))
 
 ; Show the frame to the screen
 (send frame show #t)
 
-;  0  1  2  3  4  5  6  7  8
-;  9 10 11 12 13 14 15 16 17
-; 18 19 20 21 22 23 24 25 26
-; 27 28 29 30 31 32 33 34 35
-; 36 37 38 39 40 41 42 43 44
-; 45 46 47 48 49 50 51 52 53
-; 54 55 56 57 58 59 60 61 62
-; 63 64 65 66 67 68 69 70 71
-; 72 73 74 75 76 77 78 79 80
+;  0  1  2  3  4  5  6  7  8  9
+; 10 11 12 13 14 15 16 17 18 19
+; 20 21 22 23 24 25 26 27 28 29
+; 30 31 32 33 34 35 36 37 38 39
+; 40 41 42 43 44 45 46 47 48 49
+; 50 51 52 53 54 55 56 57 58 59
+; 60 61 62 63 64 65 66 67 68 69
+; 70 71 72 73 74 75 76 77 78 79
+; 80 81 82 83 84 85 86 87 88 89
+; 90 91 92 93 94 95 96 97 98 99
