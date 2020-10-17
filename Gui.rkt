@@ -2,7 +2,8 @@
 
 (require racket/gui/base)
 (require table-panel)
-(include "tree.rkt")
+;(include "tree.rkt")
+
 
 (define frame (new frame%
                  [label "Chinese checkers"]
@@ -30,14 +31,27 @@
 (define first-tmp-color "")
 (define second-tmp-color "")
 (define last-move-color "")
+(define tmp-logical-value 0)
 
 (define wood "fotos/wood.png")
 (define black "fotos/black.png")
 (define red "fotos/red.png")
 (define blue "fotos/blue.png")
 
+(define matrix-of-pieces (list
+                          '(0 0 0 0 0 0 1 1 1 1)
+                          '(0 0 0 0 0 0 0 1 1 1)
+                          '(0 0 0 0 0 0 0 0 1 1)
+                          '(0 0 0 0 0 0 0 0 0 1)
+                          '(0 0 0 0 0 0 0 0 0 0)
+                          '(0 0 0 0 0 0 0 0 0 0)
+                          '(2 0 0 0 0 0 0 0 0 0)
+                          '(2 2 0 0 0 0 0 0 0 0)
+                          '(2 2 2 0 0 0 0 0 0 0)
+                          '(2 2 2 2 0 0 0 0 0 0)))
+
 (define list-of-image (list
-        black black black black black  black blue blue blue blue
+        black black black black black black blue blue blue blue
         black black black black black black black blue blue blue
         black black black black black black black black blue blue
         black black black black black black black black black blue
@@ -47,6 +61,7 @@
         red red black black black black black black black black
         red red red black black black black black black black
         red red red red black black black black black black))
+
 
 (define grid-board
 (for ((i (in-range 100)))
@@ -77,11 +92,15 @@
   (set! first-tmp-color (list-ref list-of-image first-position)) (set! second-tmp-color (list-ref list-of-image second-position))
   ; Sets the data on the matrix depending on the position
   (set! list-of-image(list-set list-of-image first-position second-tmp-color))(set! list-of-image (list-set list-of-image second-position first-tmp-color))
+  ; Changes the board on the logical matrix
+
   ; Deletes the button
   (delete-button first-position) (delete-button second-position)
   ; Add new buttons
   (add-button first-position)  (add-button second-position)
   (winner)]))
+
+
 
 ; Delete a button on the board
 (define (delete-button index)
