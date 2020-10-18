@@ -6,9 +6,9 @@
                           '(0 0 0 0 0 0 0 0 1 1)
                           '(0 0 0 0 0 0 0 0 0 1)
                           '(0 0 0 0 0 0 0 0 0 0)
-                          '(0 1 0 0 0 0 0 0 0 0)
+                          '(0 1 0 0 0 1 0 0 0 0)
                           '(2 0 0 0 0 0 0 0 0 0)
-                          '(2 2 0 0 0 0 0 0 0 0)
+                          '(2 2 0 1 0 0 0 0 0 0)
                           '(2 2 2 0 0 0 0 0 0 0)
                           '(2 2 2 2 0 0 0 0 0 0)))
 
@@ -21,6 +21,7 @@
 (define list-of-tiles (list
                        (list 0 6 0) (list 0 7 0) (list 0 7 1) (list 0 8 0) (list 0 8 1) (list 0 8 2) (list 0 9 0)
                        (list 0 9 1) (list 0 9 2) (list 0 9 3)))
+
 (define list-of-tmp-tiles (list
                        (list 0 0 0) (list 0 0 0) (list 0 0 0) (list 0 0 0) (list 0 0 0) (list 0 0 0) (list 0 0 0)
                        (list 0 0 0) (list 0 0 0) (list 0 0 0)))
@@ -91,8 +92,6 @@
        (if (validate-position (- x 2)(- y 2)) (if (and (= 1 (list-ref (list-ref matrix-of-pieces (- x 1)) (- y 1))) (= 0 (list-ref (list-ref matrix-of-pieces (- x 2)) (- y 2)))) (calculate-weight-jump (+ w 7) (- x 2) (- y 2)) w) w)
    ))
 
-
-
 ; This function set the weigth
 (define (loop-for-the-best-move index)
   (cond[(> index 9)]
@@ -118,9 +117,9 @@
   (loop-for-the-best-move 0)
   (verify-base-moves 0)
   (choose-moving-tile 0 0)
-  (display matrix-of-pieces)
-  (display best-move-index)
-  (set! list-of-tiles list-of-tmp-tiles)
+  (displayln matrix-of-pieces)
+  (displayln best-move-index)
+  ;(set! list-of-tiles list-of-tmp-tiles)
   (add-weigth-list 0)
   (display list-of-tiles)
-  (move-piece-to-position))
+  )
