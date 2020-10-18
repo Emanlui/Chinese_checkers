@@ -1,1 +1,97 @@
 #lang racket/gui
+
+(define matrix-of-pieces (list
+                          '(0 0 0 0 0 0 1 1 1 1)
+                          '(0 0 0 0 0 0 0 1 1 1)
+                          '(0 0 0 0 0 0 0 0 1 1)
+                          '(0 0 0 1 0 0 0 0 0 1)
+                          '(0 0 0 0 0 0 0 0 0 0)
+                          '(0 1 0 0 0 0 0 0 0 0)
+                          '(2 0 0 0 0 0 0 0 0 0)
+                          '(2 2 0 0 0 0 0 0 0 0)
+                          '(2 2 2 0 0 0 0 0 0 0)
+                          '(2 2 2 2 0 0 0 0 0 0)))
+
+; Stores the best play
+(define best-move-index 0)
+
+; This is the list of pieces of the AI
+;                   W X Y
+;             (list 0 0 0)
+(define list-of-tiles (list
+                       (list 0 6 0) (list 0 7 0) (list 0 7 1) (list 0 8 0) (list 0 8 1) (list 0 8 2) (list 0 9 0)
+                       (list 0 9 1) (list 0 9 2) (list 0 9 3)))
+
+; This function choose the best play
+(define (choose-moving-tile index best-play)
+  (cond [(> index 9) (set! best-move-index best-play)]
+    [(> (list-ref (list-ref list-of-tiles index) 0) (list-ref (list-ref list-of-tiles best-play) 0))
+     (choose-moving-tile (+ index 1) index)]
+    [else (choose-moving-tile (+ index 1) best-play)]))
+
+; Verifies if the tile is in the finished zone
+(define (verify-base-moves index)
+  (cond [(<= index 9) (tile-has-finish index)(verify-base-moves (+ index 1)) ]
+       ))
+
+; Secondary function
+(define (tile-has-finish index)
+  (cond
+    [(or (= 6 (+(second (list-ref list-of-tiles index))(third (list-ref list-of-tiles index))) )
+         (= 7 (+(second (list-ref list-of-tiles index))(third (list-ref list-of-tiles index))) )
+         (= 8 (+(second (list-ref list-of-tiles index))(third (list-ref list-of-tiles index))) )
+         (= 17 (+(second (list-ref list-of-tiles index))(third (list-ref list-of-tiles index))) )
+         (= 18 (+(second (list-ref list-of-tiles index))(third (list-ref list-of-tiles index))) )
+         (= 19 (+(second (list-ref list-of-tiles index))(third (list-ref list-of-tiles index))) )
+         (= 28 (+(second (list-ref list-of-tiles index))(third (list-ref list-of-tiles index))) )
+         (= 29 (+(second (list-ref list-of-tiles index))(third (list-ref list-of-tiles index))) )
+         (= 39 (+(second (list-ref list-of-tiles index))(third (list-ref list-of-tiles index))) ))
+
+     (set! list-of-tiles (list-set list-of-tiles index (list -1 (second (list-ref list-of-tiles index))(third (list-ref list-of-tiles index)))))]
+   ))
+
+; Adds 1 weight if the piece is not going to move
+(define (add-weigth-list index)
+  (cond [(or (> index 9) (= -1 (first (list-ref list-of-tiles index))))]
+        [(= index best-move-index)(add-weigth-list (+ index 1))]
+        [else (set! list-of-tiles (list-set list-of-tiles index (list (+ 1 (first (list-ref list-of-tiles index))) (second (list-ref list-of-tiles index))(third (list-ref list-of-tiles index)))))(add-weigth-list (+ index 1))]))
+
+(define (validate-position x y)
+  (cond [(or (< x 1) (< y 1) (> x 8) (> y 8) (= 2 (list-ref (list-ref matrix-of-pieces x) y))) #f]
+        [else #t]))
+
+(define (calculate-weight w x y)
+  (max (if (validate-position (+ x 1) (+ y 1)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ x 1)) (+ y 1))) (+ w 1)
+           (if (validate-position (+ x 2)(+ y 2))(calculate-weight-jump (+ w 7) (+ x 2) (+ y 2)) w) ) 0)
+       
+       (if (validate-position (- x 1) (+ y 1)) (if (= 0 (list-ref (list-ref matrix-of-pieces (- x 1)) (+ y 1))) (+ w 1)
+           (if (validate-position (- x 2)(+ y 2))(calculate-weight-jump (+ w 7) (- x 2) (+ y 2)) w) ) 0)
+       
+       (if (validate-position (- x 1) (- y 1)) (if (= 0 (list-ref (list-ref matrix-of-pieces (- x 1)) (- y 1))) (+ w 1)
+           (if (validate-position (- x 2)(- y 2))(calculate-weight-jump (+ w 7) (- x 2) (- y 2)) w) ) 0)
+       
+       (if (validate-position (+ x 1) (- y 1)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ x 1)) (- y 1))) (+ w 1)
+           (if (validate-position (+ x 2)(- y 2)) (calculate-weight-jump (+ w 7) (+ x 2) (- y 2)) w) ) 0)))
+
+(define (calculate-weight-jump w x y)
+  (list-set matrix-of-pieces x (list-set (list-ref matrix-of-pieces x) y -1))
+  (max (if (validate-position (+ x 2)(+ y 2)) (if (= 1 (list-ref (list-ref matrix-of-pieces (+ x 2)) (+ y 2))) (calculate-weight-jump (+ w 7) (+ x 2) (+ y 2)) w) w)
+       (if (validate-position (+ x 2)(- y 2)) (if (= 1 (list-ref (list-ref matrix-of-pieces (+ x 2)) (- y 2))) (calculate-weight-jump (+ w 7) (+ x 2) (- y 2)) w) w)
+       (if (validate-position (- x 2)(+ y 2)) (if (= 1 (list-ref (list-ref matrix-of-pieces (- x 2)) (+ y 2))) (calculate-weight-jump (+ w 7) (- x 2) (+ y 2)) w) w)
+       (if (validate-position (- x 2)(- y 2)) (if (= 1 (list-ref (list-ref matrix-of-pieces (- x 2)) (- y 2))) (calculate-weight-jump (+ w 7) (- x 2) (- y 2)) w) w)
+   ))
+
+
+;(set! matrix-of-pieces (list-set matrix-of-pieces 6 ( list-set )))
+;(define (calculate-weight list))
+;  (max 1 (if #t 2 0) )
+; (define (calculate X Y))
+
+; (verify-base-moves 0)
+;  (add-weigth-list 0)
+
+; (if (validate-position (- 7 1) (+ 0 1)) (if (= 0 (list-ref (list-ref matrix-of-pieces (- 7 1)) (+ 0 1))) (+ 0 1)
+;       (if (validate-position (- 7 2)(+ 0 2))(calculate-weight (+ 0 7) (- 7 2) (+ 0 2)) 0) ) 0)
+
+; (choose-moving-tile 0 0)
+; (display list-of-tiles)

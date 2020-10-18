@@ -38,17 +38,7 @@
 (define red "fotos/red.png")
 (define blue "fotos/blue.png")
 
-(define matrix-of-pieces (list
-                          '(0 0 0 0 0 0 1 1 1 1)
-                          '(0 0 0 0 0 0 0 1 1 1)
-                          '(0 0 0 0 0 0 0 0 1 1)
-                          '(0 0 0 0 0 0 0 0 0 1)
-                          '(0 0 0 0 0 0 0 0 0 0)
-                          '(0 0 0 0 0 0 0 0 0 0)
-                          '(2 0 0 0 0 0 0 0 0 0)
-                          '(2 2 0 0 0 0 0 0 0 0)
-                          '(2 2 2 0 0 0 0 0 0 0)
-                          '(2 2 2 2 0 0 0 0 0 0)))
+
 
 (define list-of-image (list
         black black black black black black blue blue blue blue
