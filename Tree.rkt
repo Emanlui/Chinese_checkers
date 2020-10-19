@@ -26,6 +26,22 @@
                        (list 0 0 0) (list 0 0 0) (list 0 0 0) (list 0 0 0) (list 0 0 0) (list 0 0 0) (list 0 0 0)
                        (list 0 0 0) (list 0 0 0) (list 0 0 0)))
 
+; This functions returns a list having
+; the X and Y associate to the given W
+; format: (list W X Y) 
+(define (findXY w)
+  (findXY-aux (list w 0 0))
+  )
+
+(define (findXY-aux data)
+  (cond
+    [(> (list-ref data 1) 9) empty] ; Empty if doesn't exist this weight
+    [(equal? (list-ref data 0) (list-ref (list-ref list-of-tiles (list-ref data 1))  0)) (list-ref list-of-tiles (list-ref data 1))]
+    [(equal? (list-ref data 2) 10) (findXY-aux (list (list-ref data 0) (+ (list-ref data 1) 1) 0))]
+    [else (findXY-aux (list (list-ref data 0) (list-ref data 1) (+ (list-ref data 2) 1)))]
+    )
+  )
+
 ; This function choose the best play
 ; (choose-moving-tile 0 0)
 (define (choose-moving-tile index best-play)
@@ -83,6 +99,8 @@
        
        (if (validate-position (+ x 1) (- y 1)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ x 1)) (- y 1))) (+ w 1)
            (if (and (validate-position (+ x 2)(- y 2)) (= 0 (list-ref (list-ref matrix-of-pieces (+ x 2)) (- y 2)))) (calculate-weight-jump (+ w 7) (+ x 2) (- y 2)) w) ) 0)))
+
+
 
 ; This function only iterates jumps on the matrix
 (define (calculate-weight-jump w x y)
