@@ -27,6 +27,7 @@
                        (list 0 0 0) (list 0 0 0) (list 0 0 0)))
 
 ; This function choose the best play
+; (choose-moving-tile 0 0)
 (define (choose-moving-tile index best-play)
   (cond [(> index 9) (set! best-move-index best-play)]
     [(> (list-ref (list-ref list-of-tiles index) 0) (list-ref (list-ref list-of-tiles best-play) 0))
@@ -63,7 +64,7 @@
 
 ; This function validates the given position and also that the position is not the same type of piece
 (define (validate-position x y)
-  (cond [(or (< x 1) (< y 1) (> x 8) (> y 8) (= 2 (list-ref (list-ref matrix-of-pieces x) y))) #f]
+  (cond [(or (< x 1) (< y 1) (> x 8) (> y 8)) #f]
         [else #t]))
 
 ; This function calculates de weigth of a given piece
@@ -95,7 +96,7 @@
 ; This function set the weigth
 (define (loop-for-the-best-move index)
   (cond[(> index 9)]
-       [else (set! list-of-tiles (list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (calculate-weight (first (list-ref list-of-tiles index))
+       [else (set! list-of-tmp-tiles (list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (calculate-weight (first (list-ref list-of-tiles index))
                           (second (list-ref list-of-tiles index))
                           (third (list-ref list-of-tiles index)))))) (clean-matrix) (loop-for-the-best-move (+ 1 index))]))
 
@@ -114,6 +115,8 @@
 
 (define (run-AI)
   (set! list-of-tmp-tiles list-of-tiles)
+  (loop-for-the-best-move 0)
+  (loop-for-the-best-move 0)
   (loop-for-the-best-move 0)
   (verify-base-moves 0)
   (choose-moving-tile 0 0)
