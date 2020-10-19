@@ -6,11 +6,23 @@
                           '(0 0 0 0 0 0 0 0 1 1)
                           '(0 0 0 0 0 0 0 0 0 1)
                           '(0 0 0 0 0 0 0 0 0 0)
-                          '(0 1 0 0 0 1 0 0 0 0)
+                          '(0 0 0 0 0 0 0 0 0 0)
                           '(2 0 0 0 0 0 0 0 0 0)
-                          '(2 2 0 1 0 0 0 0 0 0)
+                          '(2 2 0 0 0 0 0 0 0 0)
                           '(2 2 2 0 0 0 0 0 0 0)
                           '(2 2 2 2 0 0 0 0 0 0)))
+
+(define matrix-of-weights (list
+                          '(0 0 1 2 2 10 11 11 11 11)
+                          '(0 0 1 2 8  9 10 11 11 11)
+                          '(1 1 1 2 7  8  9 10 11 11)
+                          '(2 2 4 5 6  7  8  9 10 11)
+                          '(2 2 3 4 5  6  7  8  9 10)
+                          '(1 1 2 3 4  5  6  7  2  2)
+                          '(0 1 1 2 3  4  5  2  2  2)
+                          '(0 0 1 1 2  3  4  1  1  1)
+                          '(0 0 0 1 1  2  3  1  0  0)
+                          '(0 0 0 0 1  2  2  1  0  0)))
 
 ; Stores the best play
 (define best-move-index 0)
@@ -23,24 +35,7 @@
                        (list 0 9 1) (list 0 9 2) (list 0 9 3)))
 
 (define list-of-tmp-tiles (list
-                       (list 0 0 0) (list 0 0 0) (list 0 0 0) (list 0 0 0) (list 0 0 0) (list 0 0 0) (list 0 0 0)
-                       (list 0 0 0) (list 0 0 0) (list 0 0 0)))
-
-; This functions returns a list having
-; the X and Y associate to the given W
-; format: (list W X Y) 
-(define (findXY w)
-  (findXY-aux (list w 0 0))
-  )
-
-(define (findXY-aux data)
-  (cond
-    [(> (list-ref data 1) 9) empty] ; Empty if doesn't exist this weight
-    [(equal? (list-ref data 0) (list-ref (list-ref list-of-tiles (list-ref data 1))  0)) (list-ref list-of-tiles (list-ref data 1))]
-    [(equal? (list-ref data 2) 10) (findXY-aux (list (list-ref data 0) (+ (list-ref data 1) 1) 0))]
-    [else (findXY-aux (list (list-ref data 0) (list-ref data 1) (+ (list-ref data 2) 1)))]
-    )
-  )
+                       (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
 
 ; This function choose the best play
 ; (choose-moving-tile 0 0)
@@ -83,64 +78,49 @@
   (cond [(or (< x 1) (< y 1) (> x 8) (> y 8)) #f]
         [else #t]))
 
-; This function calculates de weigth of a given piece
-(define (calculate-weight w x y)
-  ; Obtains the best move
-        ;   first we validate the move          if it is valid the checks if the move has a 0 (free space) and if it is a 0 then returns w+1
-  (max (if (validate-position (+ x 1) (+ y 1)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ x 1)) (+ y 1))) (+ w 1)
-           ; if not, then validate the jump, if it is a valid jump, then we call our secondary function for jumps, if it is not valid the returns 0
-           (if (and (validate-position (+ x 2)(+ y 2)) (= 0 (list-ref (list-ref matrix-of-pieces (+ x 2)) (+ y 2)))) (calculate-weight-jump (+ w 7) (+ x 2) (+ y 2)) w) ) 0)
-       
-       (if (validate-position (- x 1) (+ y 1)) (if (= 0 (list-ref (list-ref matrix-of-pieces (- x 1)) (+ y 1))) (+ w 1)
-           (if (and (validate-position (- x 2)(+ y 2)) (= 0 (list-ref (list-ref matrix-of-pieces (- x 2)) (+ y 2)))) (calculate-weight-jump (+ w 7) (- x 2) (+ y 2)) w) ) 0)
-       
-       (if (validate-position (- x 1) (- y 1)) (if (= 0 (list-ref (list-ref matrix-of-pieces (- x 1)) (- y 1))) (+ w 1)
-           (if (and (validate-position (- x 2)(- y 2)) (= 0 (list-ref (list-ref matrix-of-pieces (- x 2)) (- y 2)))) (calculate-weight-jump (+ w 7) (- x 2) (- y 2)) w) ) 0)
-       
-       (if (validate-position (+ x 1) (- y 1)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ x 1)) (- y 1))) (+ w 1)
-           (if (and (validate-position (+ x 2)(- y 2)) (= 0 (list-ref (list-ref matrix-of-pieces (+ x 2)) (- y 2)))) (calculate-weight-jump (+ w 7) (+ x 2) (- y 2)) w) ) 0)))
+(define (find-all-moves x y index)
+;            | x-3 , y |
+;                  1          1
+;            | x-1 , y |  x+1 , y+1
+;  x   , y-1 |     0   |  x   , y+1      1
+;  x-1 , y+1 | x+1 , y |
+;                  1
+;
+  ; adds the current position to the list
+  
+  (cond [(and (validate-position (- 1 x) y) (if (= 0 (list-ref (list-ref matrix-of-pieces y) (- 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) y)))]  
+        [(and (validate-position (+ 1 x) (+ 1 y)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 y)) (+ 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (+ 1 x) (+ 1 y))))]  
+        [(and (validate-position x (+ 1 y)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 y)) x)) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list x (+ 1 y))))]
+        [(and (validate-position (+ 1 x) y) (if (= 0 (list-ref (list-ref matrix-of-pieces y) (+ 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (+ 1 x) y)))]
+        [(and (validate-position (- 1 x) (+ 1 y)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 y)) (- 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) (+ 1 y))))]
+        [(and (validate-position x (- 1 y)) (if (= 0 (list-ref (list-ref matrix-of-pieces (- 1 y)) x)) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list x (- 1 y))))]
 
+        [(and (validate-position (- 1 x) y) (if (= 2 (list-ref (list-ref matrix-of-pieces y) (- 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) y)))]
+        [(and (validate-position (- 1 x) y) (if (= 2 (list-ref (list-ref matrix-of-pieces y) (- 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) y)))]
+        [(and (validate-position (- 1 x) y) (if (= 2 (list-ref (list-ref matrix-of-pieces y) (- 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) y)))]
+        [(and (validate-position (- 1 x) y) (if (= 2 (list-ref (list-ref matrix-of-pieces y) (- 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) y)))]
+        [(and (validate-position (- 1 x) y) (if (= 2 (list-ref (list-ref matrix-of-pieces y) (- 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) y)))]
+        
+     )
+  )
 
-
-; This function only iterates jumps on the matrix
-(define (calculate-weight-jump w x y)
-  (set! matrix-of-pieces (list-set matrix-of-pieces x (list-set (list-ref matrix-of-pieces x) y -1)))
-  (max (if (validate-position (+ x 2)(+ y 2)) (if (and (= 1 (list-ref (list-ref matrix-of-pieces (+ x 1)) (+ y 1))) (= 0 (list-ref (list-ref matrix-of-pieces (+ x 2)) (+ y 2)))) (calculate-weight-jump (+ w 7) (+ x 2) (+ y 2)) w) w)
-       (if (validate-position (+ x 2)(- y 2)) (if (and (= 1 (list-ref (list-ref matrix-of-pieces (+ x 1)) (- y 1))) (= 0 (list-ref (list-ref matrix-of-pieces (+ x 2)) (- y 2)))) (calculate-weight-jump (+ w 7) (+ x 2) (- y 2)) w) w)
-       (if (validate-position (- x 2)(+ y 2)) (if (and (= 1 (list-ref (list-ref matrix-of-pieces (- x 1)) (+ y 1))) (= 0 (list-ref (list-ref matrix-of-pieces (- x 2)) (+ y 2)))) (calculate-weight-jump (+ w 7) (- x 2) (+ y 2)) w) w)
-       (if (validate-position (- x 2)(- y 2)) (if (and (= 1 (list-ref (list-ref matrix-of-pieces (- x 1)) (- y 1))) (= 0 (list-ref (list-ref matrix-of-pieces (- x 2)) (- y 2)))) (calculate-weight-jump (+ w 7) (- x 2) (- y 2)) w) w)
-   ))
+(define (find-all-moves-jump x y index)
+  "A")
 
 ; This function set the weigth
 (define (loop-for-the-best-move index)
   (cond[(> index 9)]
-       [else (set! list-of-tmp-tiles (list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (calculate-weight (first (list-ref list-of-tiles index))
-                          (second (list-ref list-of-tiles index))
-                          (third (list-ref list-of-tiles index)))))) (clean-matrix) (loop-for-the-best-move (+ 1 index))]))
-
-; This function cleans the matrix that has -1
-(define (clean-matrix)
-  (for ((x (in-range 10)) 
-  )(for ((y (in-range 10)) 
-  )(if (= -1 (list-ref(list-ref matrix-of-pieces x)y))
-       (set! matrix-of-pieces (list-set matrix-of-pieces x (list-set (list-ref matrix-of-pieces x) y 0))) null))))
-
-;(define (move-piece-to-position)
-;  (set! matrix-of-pieces (list-set matrix-of-pieces (first (list-ref list-of-tiles best-move-index))
-;                                   (list-set (list-ref matrix-of-pieces (first (list-ref list-of-tiles best-move-index)))
-;                                             (second (list-ref list-of-tiles best-move-index)) 2)))
-;  )
-
+       [else (find-all-moves (first (list-ref list-of-tiles index)) (second (list-ref list-of-tiles index)) index)]))
+      
 (define (run-AI)
-  (set! list-of-tmp-tiles list-of-tiles)
+  
   (loop-for-the-best-move 0)
-  (loop-for-the-best-move 0)
-  (loop-for-the-best-move 0)
-  (verify-base-moves 0)
-  (choose-moving-tile 0 0)
-  (displayln matrix-of-pieces)
-  (displayln best-move-index)
+  ;(verify-base-moves 0)
+  ;(choose-moving-tile 0 0)
+  ;(displayln matrix-of-pieces)
+  ;(displayln best-move-index)
   ;(set! list-of-tiles list-of-tmp-tiles)
-  (add-weigth-list 0)
-  (display list-of-tiles)
+  ;(add-weigth-list 0)
+  (displayln list-of-tiles)
+  (displayln list-of-tmp-tiles)
   )
