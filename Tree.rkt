@@ -75,34 +75,25 @@
 
 ; This function validates the given position and also that the position is not the same type of piece
 (define (validate-position x y)
-  (cond [(or (< x 1) (< y 1) (> x 8) (> y 8)) #f]
+  (cond [(or (< x 1) (< y 1) (> x 9) (> y 9)) #f]
         [else #t]))
 
 (define (find-all-moves x y index)
-;            | x-3 , y |
-;                  1          1
-;            | x-1 , y |  x+1 , y+1
-;  x   , y-1 |     0   |  x   , y+1      1
-;  x-1 , y+1 | x+1 , y |
-;                  1
-;
+
+;            | x , y-1 |  x+1   , y-1
+;  x-1   , y |     0   |  x+1   , y   
+;  x-1 , y+1 | x , y+1 |
   ; adds the current position to the list
   
-  (cond [(and (validate-position (- 1 x) y) (if (= 0 (list-ref (list-ref matrix-of-pieces y) (- 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) y)))]  
-        [(and (validate-position (+ 1 x) (+ 1 y)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 y)) (+ 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (+ 1 x) (+ 1 y))))]  
-        [(and (validate-position x (+ 1 y)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 y)) x)) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list x (+ 1 y))))]
-        [(and (validate-position (+ 1 x) y) (if (= 0 (list-ref (list-ref matrix-of-pieces y) (+ 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (+ 1 x) y)))]
-        [(and (validate-position (- 1 x) (+ 1 y)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 y)) (- 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) (+ 1 y))))]
-        [(and (validate-position x (- 1 y)) (if (= 0 (list-ref (list-ref matrix-of-pieces (- 1 y)) x)) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list x (- 1 y))))]
-
-        [(and (validate-position (- 1 x) y) (if (= 2 (list-ref (list-ref matrix-of-pieces y) (- 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) y)))]
-        [(and (validate-position (- 1 x) y) (if (= 2 (list-ref (list-ref matrix-of-pieces y) (- 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) y)))]
-        [(and (validate-position (- 1 x) y) (if (= 2 (list-ref (list-ref matrix-of-pieces y) (- 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) y)))]
-        [(and (validate-position (- 1 x) y) (if (= 2 (list-ref (list-ref matrix-of-pieces y) (- 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) y)))]
-        [(and (validate-position (- 1 x) y) (if (= 2 (list-ref (list-ref matrix-of-pieces y) (- 1 x))) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) y)))]
+  (if(and (validate-position x (- 1 y))       (if (= 0 (list-ref (list-ref matrix-of-pieces (- 1 y)) x)) #t #f))        (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list x (- 1 y)))) empty)  
+  (if(and (validate-position (+ 1 x) (- 1 y)) (if (= 0 (list-ref (list-ref matrix-of-pieces (- 1 y)) (+ 1 x) )) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (+ 1 x) (- 1 y)))) empty)   
+  (if(and (validate-position (+ 1 x) y)       (if (= 0 (list-ref (list-ref matrix-of-pieces y) (+ 1 x))) #t #f))        (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (+ 1 x) y))) empty)  
+  (if(and (validate-position x (+ 1 y))       (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 y)) x)) #t #f))        (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list x (+ 1 y)))) empty)  
+  (if(and (validate-position (- 1 x) (+ 1 y)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 y)) (- 1 x))) #t #f))  (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) (+ 1 y)))) empty)  
+  (if(and (validate-position (- 1 x) y)       (if (= 0 (list-ref (list-ref matrix-of-pieces y) (- 1 x))) #t #f))        (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) y))) empty)  
         
      )
-  )
+  
 
 (define (find-all-moves-jump x y index)
   "A")
