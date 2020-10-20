@@ -75,33 +75,55 @@
 
 ; This function validates the given position and also that the position is not the same type of piece
 (define (validate-position x y)
-  (cond [(or (< x 1) (< y 1) (> x 9) (> y 9)) #f]
+  (cond [(or (< x 0) (< y 0) (> x 9) (> y 9)) #f]
         [else #t]))
 
-(define (find-all-moves x y index)
-
-;            | x , y-1 |  x+1   , y-1
-;  x-1   , y |     0   |  x+1   , y   
-;  x-1 , y+1 | x , y+1 |
-  ; adds the current position to the list
+(define (find-all-moves x y index)                                                            
+;                                          |                            y , x-2           |   y+2   , x-2
+;            | y , x-1 |  y+1   , x-1      |              |               1      |    1   |   
+;  y-1   , x |     0   |  y+1   , x        | y-2   , x    |    1    |     0      |    1   |   y+2   , x
+;  y-1 , x+1 | y , x+1 |                   |              |    1    |     1      |
+; adds the current position to the list    | y-2   , x+2  |         |   y , x+2
   
-  (if(and (validate-position x (- 1 y))       (if (= 0 (list-ref (list-ref matrix-of-pieces (- 1 y)) x)) #t #f))        (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list x (- 1 y)))) empty)  
-  (if(and (validate-position (+ 1 x) (- 1 y)) (if (= 0 (list-ref (list-ref matrix-of-pieces (- 1 y)) (+ 1 x) )) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (+ 1 x) (- 1 y)))) empty)   
-  (if(and (validate-position (+ 1 x) y)       (if (= 0 (list-ref (list-ref matrix-of-pieces y) (+ 1 x))) #t #f))        (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (+ 1 x) y))) empty)  
-  (if(and (validate-position x (+ 1 y))       (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 y)) x)) #t #f))        (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list x (+ 1 y)))) empty)  
-  (if(and (validate-position (- 1 x) (+ 1 y)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 y)) (- 1 x))) #t #f))  (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) (+ 1 y)))) empty)  
-  (if(and (validate-position (- 1 x) y)       (if (= 0 (list-ref (list-ref matrix-of-pieces y) (- 1 x))) #t #f))        (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (list (- 1 x) y))) empty)  
-        
+  (if(and (validate-position y (- x 1))       (if (= 0 (list-ref (list-ref matrix-of-pieces (- x 1)) y)) #t #f))        (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list (- x 1) y))))) void)  
+  (if(and (validate-position (+ 1 y) (- x 1)) (if (= 0 (list-ref (list-ref matrix-of-pieces (- x 1)) (+ 1 y) )) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list (- x 1) (+ 1 y) ))))) void)   
+  (if(and (validate-position (+ 1 y) x)       (if (= 0 (list-ref (list-ref matrix-of-pieces x) (+ 1 y))) #t #f))        (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list x (+ 1 y)))))) void)  
+  (if(and (validate-position y (+ 1 x))       (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 x))y )) #t #f))        (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list (+ 1 x) y))))) void)  
+  (if(and (validate-position (- y 1) (+ 1 x)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 x))(- y 1) )) #t #f))  (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list (+ 1 x) (- y 1)))))) void)  
+  (if(and (validate-position (- y 1) x)       (if (= 0 (list-ref (list-ref matrix-of-pieces x)(- y 1) )) #t #f))        (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list x (- y 1)))))) void)  
+
+  (find-all-moves-jump x y index)
+   
      )
   
-
+  
 (define (find-all-moves-jump x y index)
-  "A")
+;                                          |                            y , x-2           |   y+2   , x-2
+;            | y , x-1 |  y+1   , x-1      |              |               1      |    1   |   
+;  y-1   , x |     0   |  y+1   , x        | y-2   , x    |    1    |     0      |    1   |   y+2   , x
+;  y-1 , x+1 | y , x+1 |                   |              |    1    |     1      |
+; adds the current position to the list    | y-2   , x+2  |         |   y , x+2
+  
+  (if (and (validate-position (- x 2) y)       (or(= 2 (list-ref (list-ref matrix-of-pieces (- x 1)) y))(= 1 (list-ref (list-ref matrix-of-pieces (- x 1)) y)))             (= 0 (list-ref (list-ref matrix-of-pieces (- x 2)) y))) (jump-found (- x 2) y index)  void )
+  (if (and (validate-position (- x 2) (+ y 2)) (or(= 2 (list-ref (list-ref matrix-of-pieces (- x 1)) (+ y 1))) (= 1 (list-ref (list-ref matrix-of-pieces (- x 1)) (+ y 1)))) (= 0 (list-ref (list-ref matrix-of-pieces (- x 2)) (+ y 2)))) (jump-found (- x 2) (+ y 2) index) void )
+  (if (and (validate-position x (+ y 2))       (or(= 2 (list-ref (list-ref matrix-of-pieces x) (+ y 1)))(= 1 (list-ref (list-ref matrix-of-pieces x) (+ y 1))))              (= 0 (list-ref (list-ref matrix-of-pieces x) (+ y 2)))) (jump-found x (+ y 2) index) void )
+  (if (and (validate-position (+ x 2) y)       (or(= 2 (list-ref (list-ref matrix-of-pieces (+ x 1)) y))(= 1 (list-ref (list-ref matrix-of-pieces (+ x 1)) y)))              (= 0 (list-ref (list-ref matrix-of-pieces (+ x 2)) y))) (jump-found (+ x 2) y index)  void )
+  (if (and (validate-position (+ x 2) (- y 2)) (or(= 2 (list-ref (list-ref matrix-of-pieces (+ x 1)) (- y 1)))(= 1 (list-ref (list-ref matrix-of-pieces (+ x 1)) (- y 1))))  (= 0 (list-ref (list-ref matrix-of-pieces (+ x 2)) (- y 2)))) (jump-found (+ x 2) (- y 2) index) void )
+  (if (and (validate-position x (- y 2))       (or(= 2 (list-ref (list-ref matrix-of-pieces x) (- y 1)))(= 1 (list-ref (list-ref matrix-of-pieces x) (- y 1))))              (= 0 (list-ref (list-ref matrix-of-pieces x) (- y 2)))) (jump-found x (- y 2) index) void )
+  
+  )
+
+(define (jump-found x y index)
+  (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list x y)))))
+  (set! matrix-of-pieces (list-set matrix-of-pieces x (list-set (list-ref matrix-of-pieces x) y -1)))
+  (find-all-moves-jump x y index) 
+  )
 
 ; This function set the weigth
 (define (loop-for-the-best-move index)
   (cond[(> index 9)]
-       [else (find-all-moves (first (list-ref list-of-tiles index)) (second (list-ref list-of-tiles index)) index)]))
+       [else (find-all-moves (second (list-ref list-of-tiles index)) (third (list-ref list-of-tiles index)) index) (loop-for-the-best-move (+ index 1)) ]))
+       
       
 (define (run-AI)
   
