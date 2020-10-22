@@ -116,7 +116,7 @@
   )
 
 (define (jump-found x y future-x future-y index)
-  ;(display (list x y future-x future-y index))
+  (display (list x y future-x future-y index))
   (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list future-x future-y)))))
   (set! matrix-of-pieces (list-set matrix-of-pieces x (list-set (list-ref matrix-of-pieces x) y -1)))
   (find-all-moves-jump future-x future-y index) 
