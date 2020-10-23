@@ -38,6 +38,15 @@
 (define list-of-tmp-tiles (list
                        (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
 
+(define list-of-tmp-tiles (list
+                       (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
+
+(define list-of-tmp-tiles (list
+                       (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
+
+(define list-of-tmp-tiles (list
+                       (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
+
 ; This function choose the best play
 ; (choose-moving-tile 0 0)
 (define (choose-moving-tile index best-play)
@@ -116,7 +125,7 @@
   )
 
 (define (jump-found x y future-x future-y index)
-  (display (list x y future-x future-y index))
+  ;(display (list x y future-x future-y index))
   (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list future-x future-y)))))
   (set! matrix-of-pieces (list-set matrix-of-pieces x (list-set (list-ref matrix-of-pieces x) y -1)))
   (find-all-moves-jump future-x future-y index) 
@@ -129,14 +138,14 @@
 
 (define (find-best-move index)
   (cond[(> index 9)]
-       [else (set! list-of-tiles (list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (find-best-move-aux (list-ref list-of-tmp-tiles index) 0))))
+       [else (set! list-of-tiles (list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (find-best-move-aux (list-ref list-of-tmp-tiles index) (list 0 0 0)))))
         ;(displayln (list-ref list-of-tmp-tiles index) )
         (find-best-move (+ 1 index))]))
 
 
 (define (find-best-move-aux lst weigth)
   (cond [(empty? lst) weigth]
-  [(> (list-ref (list-ref matrix-of-weights (first (first lst))) (second(first lst))) weigth) (find-best-move-aux (rest lst) (list-ref (list-ref matrix-of-weights (first (first lst))) (second(first lst))))]
+  [(> (list-ref (list-ref matrix-of-weights (first (first lst))) (second(first lst))) (first weigth)) (find-best-move-aux (rest lst) ( list (list-ref (list-ref matrix-of-weights (first (first lst))) (second(first lst))) (first (first lst)) (second (first lst)) ))]
   [else (find-best-move-aux (rest lst) weigth)]
   ))
 
