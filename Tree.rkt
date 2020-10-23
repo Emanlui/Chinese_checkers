@@ -35,13 +35,13 @@
                        (list 0 6 0) (list 0 7 0) (list 0 7 1) (list 0 8 0) (list 0 8 1) (list 0 8 2) (list 0 9 0)
                        (list 0 9 1) (list 0 9 2) (list 0 9 3)))
 
-(define list-of-tmp-tiles (list
+(define first-level (list
                        (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
 
-(define list-of-tmp-tiles (list
+(define second-level (list
                        (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
 
-(define list-of-tmp-tiles (list
+(define third-level (list
                        (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
 
 (define list-of-tmp-tiles (list
@@ -138,7 +138,10 @@
 
 (define (find-best-move index)
   (cond[(> index 9)]
-       [else (set! list-of-tiles (list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (find-best-move-aux (list-ref list-of-tmp-tiles index) (list 0 0 0)))))
+       [else
+    
+
+        (set! list-of-tiles (list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (find-best-move-aux (list-ref list-of-tmp-tiles index) (list 0 0 0)))))
         ;(displayln (list-ref list-of-tmp-tiles index) )
         (find-best-move (+ 1 index))]))
 
@@ -151,7 +154,7 @@
 
 (define (run-AI)
 
-  (find-all-moves-function 0)
+  (find-all-moves-function 0 )
   (find-best-move 0)
   ;(verify-base-moves 0)
   ;(choose-moving-tile 0 0)
@@ -162,4 +165,12 @@
   (displayln list-of-tiles)
   (displayln "")
   (displayln list-of-tmp-tiles)
+  (displayln "")
+  (displayln first-level)
+  (displayln "")
+  (displayln second-level)
+  (displayln "")
+  (displayln third-level)
+  
+  
   )
