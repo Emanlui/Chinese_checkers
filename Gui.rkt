@@ -106,7 +106,6 @@
 
   (set! matrix-of-tmp-pieces matrix-of-pieces)
   (find-all-moves-jump x y index)
- 
      )
   
   
@@ -129,8 +128,8 @@
 (define (jump-found x y future-x future-y index)
   ;(display (list x y future-x future-y index))
   (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list future-x future-y)))))
-  (set! matrix-of-pieces (list-set matrix-of-pieces x (list-set (list-ref matrix-of-pieces x) y -1)))
-  (find-all-moves-jump future-x future-y index) 
+  (set! matrix-of-tmp-pieces (list-set matrix-of-pieces x (list-set (list-ref matrix-of-pieces x) y -1)))
+  (find-all-moves-jump future-x future-y index)
   )
 
 ; This function set the weigth
@@ -189,18 +188,13 @@
      ;(list-set 0 tmp-for-swap (list-ref list-of-image next-position))
      ;(list-set next-position list-of-image (list-ref list-of-image current-position))
      ;(list-set current-position list-of-image (list-ref tmp-for-swap 0))
-     (displayln "---------------------------------------------------------------")
-     (displayln list-of-image)
-     (displayln "---------------------------------------------------------------")
      (set! first-click #f)
      (set! second-click #t)
      (set! first-position current-position)
      (set! second-position next-position)
      (change-color)
-     
      (update-mtx); updates matrix-of-pieces too
-     (displayln list-of-image)
-     (displayln "---------------------------------------------------------------")
+     ;(displayln list-of-image)
      ]
     [else empty]
     )
@@ -208,7 +202,7 @@
 
 ;Get a pair and returns a single index for list logic
 (define (to-single-index lst)
-  (- (+ (* (first lst) 10) (second lst)) 1)
+  (+ (* (first lst) 10) (second lst))
   )
 
 ;This function returns a list
@@ -300,8 +294,7 @@
 
 ; Change the color on the matrix
 (define (change-color)
-  (cond [(and (not(equal? last-move-color (list-ref list-of-image first-position)))(validate-move first-position second-position) (not(equal? first-position second-position)) (not(equal? (list-ref list-of-image first-position) black)))
-
+  (cond [(and (not(equal? last-move-color (list-ref list-of-image first-position)))(validate-move first-position second-position) (not(equal? first-position second-position)) (display first-position) (not(equal? (list-ref list-of-image first-position) black)))
   ; Change the color label
   (change-color-turn)
   ; Sets the new "last-move-color", this variable stores the last button color that was move
