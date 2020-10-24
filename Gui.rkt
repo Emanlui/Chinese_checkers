@@ -185,14 +185,22 @@
 
 (define (do-best-move current-position next-position);currentpos and nextpos are both a single nomber (refering list-of-image)
   (cond
-    [(equal? first-click #t)
+    [(equal? first-click #f)
      ;(list-set 0 tmp-for-swap (list-ref list-of-image next-position))
      ;(list-set next-position list-of-image (list-ref list-of-image current-position))
      ;(list-set current-position list-of-image (list-ref tmp-for-swap 0))
+     (displayln "---------------------------------------------------------------")
+     (displayln list-of-image)
+     (displayln "---------------------------------------------------------------")
+     (set! first-click #f)
+     (set! second-click #t)
      (set! first-position current-position)
      (set! second-position next-position)
      (change-color)
+     
      (update-mtx); updates matrix-of-pieces too
+     (displayln list-of-image)
+     (displayln "---------------------------------------------------------------")
      ]
     [else empty]
     )
@@ -210,6 +218,7 @@
   (get-swaping-aux 0 0))
 
 (define (get-swaping-aux index max-weight-index)
+  (displayln list-of-tiles)
   (cond
     [(> index (- (length list-of-tiles) 1)) (list (to-single-index (list (second (list-ref list-of-tiles max-weight-index)) (third (list-ref list-of-tiles max-weight-index))))
                                             (to-single-index (list (second (first (list-ref list-of-tiles max-weight-index))) (third (first (list-ref list-of-tiles max-weight-index))))))]
@@ -221,7 +230,8 @@
 ;FUNCIÓN NO TERMINADA!!!!! ES NECESARIO HACER QUE SE SELECCIONE LA FICHA QUE LA IA VA A JUGAR--------------
 ;QUE SE HAGA UN "CLIC" desde la lógica
 (define (do-IA)
-  (do-best-move (first get-swaping-indexes) (second get-swaping-indexes))
+  (run-AI)
+  (do-best-move (first (get-swaping-indexes)) (second (get-swaping-indexes)))
   )
 
 (define frame (new frame%
@@ -285,7 +295,7 @@
 (define (button-click i color)
     (cond
      [(false? first-click) (set! first-click #t) (set! second-click #f) (set! first-position i) (set! second-position 0)]
-     [else (set! first-click #f)(set! second-click #t)(set! second-position i) (change-color) (set! first-position 0)]
+     [else (set! first-click #f)(set! second-click #t)(set! second-position i) (change-color) (set! first-position 0) (if (equal? last-move-color blue) (do-IA) empty) ]
      ))
 
 ; Change the color on the matrix
@@ -399,17 +409,14 @@
 (define (update-mtx-aux index)
   (cond
     [(> index (- (length list-of-image) 1)) empty]
-    [(equal? (list-ref list-of-image index) blue) (list-set matrix-of-pieces (modulo index 10) (list-set (list-ref matrix-of-pieces (modulo index 10)) (- index (modulo index 10)) 1))
+    [(equal? (list-ref list-of-image index) blue) (list-set matrix-of-pieces (modulo index 10) (list-set (list-ref matrix-of-pieces (modulo index 10)) (quotient index 10) 1))
                                                   (update-mtx-aux (+ index 1))]
-    [(equal? (list-ref list-of-image index) red) (list-set matrix-of-pieces (modulo index 10) (list-set (list-ref matrix-of-pieces (modulo index 10)) (- index (modulo index 10)) 2))
+    [(equal? (list-ref list-of-image index) red) (list-set matrix-of-pieces (modulo index 10) (list-set (list-ref matrix-of-pieces (modulo index 10)) (quotient index 10) 2))
                                                  (update-mtx-aux (+ index 1))]
-    [(equal? (list-ref list-of-image index) black) (list-set matrix-of-pieces (modulo index 10) (list-set (list-ref matrix-of-pieces (modulo index 10)) (- index (modulo index 10)) 0))
+    [(equal? (list-ref list-of-image index) black) (list-set matrix-of-pieces (modulo index 10) (list-set (list-ref matrix-of-pieces (modulo index 10)) (quotient index 10) 0))
                                                    (update-mtx-aux (+ index 1))]
     )
   )
-
-
-
 
 ;  0  1  2  3  4  5  6  7  8  9
 ; 10 11 12 13 14 15 16 17 18 19
