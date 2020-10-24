@@ -157,6 +157,22 @@
 
   (find-all-moves-function 0 )
   (find-best-move 0)
+
+  ;(displayln list-of-tiles)
+  ;(displayln "")
+  ;(displayln list-of-tmp-tiles)
+
+  (set! matrix-of-pieces (list-set matrix-of-pieces (second(list-ref list-of-tiles best-move-index)) (list-set (list-ref matrix-of-pieces (second(list-ref list-of-tiles best-move-index))) (third(list-ref list-of-tiles best-move-index)) 0)))
+  (set! matrix-of-pieces (list-set matrix-of-pieces (second(first(list-ref list-of-tiles best-move-index))) (list-set (list-ref matrix-of-pieces (second(first(list-ref list-of-tiles best-move-index)))) (third(first(list-ref list-of-tiles best-move-index))) 2)))
+  (displayln list-of-tiles)
+
+
+
+  ;(set! list-of-tiles (list-set list-of-tiles best-move-index (list (first(list-ref list-of-tiles best-move-index)) (second(first(list-ref list-of-tiles best-move-index)))(third(first(list-ref list-of-tiles best-move-index))))))
+  (set! list-of-tmp-tiles (list
+                       (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
+  ;(displayln list-of-tiles)
+  (update-mtx)
   ;(verify-base-moves 0)
   ;(choose-moving-tile 0 0)
   ;(displayln matrix-of-pieces)
@@ -226,6 +242,7 @@
 (define (do-IA)
   (run-AI)
   (do-best-move (first (get-swaping-indexes)) (second (get-swaping-indexes)))
+  (set! list-of-tiles (list-set list-of-tiles best-move-index (list (first(list-ref list-of-tiles best-move-index)) (second(first(list-ref list-of-tiles best-move-index)))(third(first(list-ref list-of-tiles best-move-index))))))
   )
 
 (define frame (new frame%
@@ -288,6 +305,7 @@
 
 (define (button-click i color)
     (cond
+      [(equal? last-move-color blue) empty]
      [(false? first-click) (set! first-click #t) (set! second-click #f) (set! first-position i) (set! second-position 0)]
      [else (set! first-click #f)(set! second-click #t)(set! second-position i) (change-color) (set! first-position 0) (if (equal? last-move-color blue) (do-IA) empty) ]
      ))
