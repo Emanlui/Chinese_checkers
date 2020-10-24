@@ -37,18 +37,17 @@
                        (list 0 6 0) (list 0 7 0) (list 0 7 1) (list 0 8 0) (list 0 8 1) (list 0 8 2) (list 0 9 0)
                        (list 0 9 1) (list 0 9 2) (list 0 9 3)))
 
-(define list-of-tmp-tiles (list
+(define first-level (list
                        (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
 
-(define (select-best)
-  (select-best-aux 0 0)
-  )
-(define (select-best-aux index best)
-  (cond
-    [(> index (- (length list-of-tiles) 1)) best]; devuelve el índice de la ficha que puede alcanzar un mayor peso
-    [(> (list-ref (list-ref list-of-tiles index) 0) (list-ref list-of-tiles best)) (select-best-aux (+ index 1) index)]
-    [else (select-best-aux (+ index 1) best)]
-    ))
+(define second-level (list
+                       (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
+
+(define third-level (list
+                       (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
+
+(define list-of-tmp-tiles (list
+                       (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
 
 ; This function choose the best play
 ; (choose-moving-tile 0 0)
@@ -141,20 +140,23 @@
 
 (define (find-best-move index)
   (cond[(> index 9)]
-       [else (set! list-of-tiles (list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (find-best-move-aux (list-ref list-of-tmp-tiles index) 0))))
+       [else
+    
+
+        (set! list-of-tiles (list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (find-best-move-aux (list-ref list-of-tmp-tiles index) (list 0 0 0)))))
         ;(displayln (list-ref list-of-tmp-tiles index) )
         (find-best-move (+ 1 index))]))
 
 
 (define (find-best-move-aux lst weigth)
   (cond [(empty? lst) weigth]
-  [(> (list-ref (list-ref matrix-of-weights (first (first lst))) (second(first lst))) weigth) (find-best-move-aux (rest lst) (list-ref (list-ref matrix-of-weights (first (first lst))) (second(first lst))))]
+  [(> (list-ref (list-ref matrix-of-weights (first (first lst))) (second(first lst))) (first weigth)) (find-best-move-aux (rest lst) ( list (list-ref (list-ref matrix-of-weights (first (first lst))) (second(first lst))) (first (first lst)) (second (first lst)) ))]
   [else (find-best-move-aux (rest lst) weigth)]
   ))
 
 (define (run-AI)
 
-  (find-all-moves-function 0)
+  (find-all-moves-function 0 )
   (find-best-move 0)
   ;(verify-base-moves 0)
   ;(choose-moving-tile 0 0)
@@ -165,6 +167,12 @@
   (displayln list-of-tiles)
   (displayln "")
   (displayln list-of-tmp-tiles)
+  (displayln "")
+  (displayln first-level)
+  (displayln "")
+  (displayln second-level)
+  (displayln "")
+  (displayln third-level)
   )
 
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -174,6 +182,47 @@
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+(define (do-best-move current-position next-position);currentpos and nextpos are both a single nomber (refering list-of-image)
+  (cond
+    [(equal? first-click #t)
+     ;(list-set 0 tmp-for-swap (list-ref list-of-image next-position))
+     ;(list-set next-position list-of-image (list-ref list-of-image current-position))
+     ;(list-set current-position list-of-image (list-ref tmp-for-swap 0))
+     (set! first-position current-position)
+     (set! second-position next-position)
+     (change-color)
+     (update-mtx); updates matrix-of-pieces too
+     ]
+    [else empty]
+    )
+  )
+
+;Get a pair and returns a single index for list logic
+(define (to-single-index lst)
+  (- (+ (* (first lst) 10) (second lst)) 1)
+  )
+
+;This function returns a list
+;having two single indexes (current-place and next-place),
+;something like (65 73)
+(define (get-swaping-indexes)
+  (get-swaping-aux 0 0))
+
+(define (get-swaping-aux index max-weight-index)
+  (cond
+    [(> index (- (length list-of-tiles) 1)) (list (to-single-index (list (second (list-ref list-of-tiles max-weight-index)) (third (list-ref list-of-tiles max-weight-index))))
+                                            (to-single-index (list (second (first (list-ref list-of-tiles max-weight-index))) (third (first (list-ref list-of-tiles max-weight-index))))))]
+    [(> (first (first (list-ref list-of-tiles index))) (first (first (list-ref list-of-tiles max-weight-index)))) (get-swaping-aux (+ index 1) index)]
+    [else (get-swaping-aux (+ 1 index) max-weight-index)]
+    )
+  )
+
+;FUNCIÓN NO TERMINADA!!!!! ES NECESARIO HACER QUE SE SELECCIONE LA FICHA QUE LA IA VA A JUGAR--------------
+;QUE SE HAGA UN "CLIC" desde la lógica
+(define (do-IA)
+  (do-best-move (first get-swaping-indexes) (second get-swaping-indexes))
+  )
 
 (define frame (new frame%
                  [label "Chinese checkers"]
@@ -207,8 +256,6 @@
 (define black "fotos/black.png")
 (define red "fotos/red.png")
 (define blue "fotos/blue.png")
-
-
 
 (define list-of-image (list
         black black black black black black blue blue blue blue
@@ -342,6 +389,9 @@
 ; Show the frame to the screen
 (send frame show #t)
 
+
+;This function updates matrix of pieces
+;by using list-of-image data
 (define (update-mtx)
   (update-mtx-aux 0)
   )
