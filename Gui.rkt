@@ -221,12 +221,11 @@
      (set! first-click #f)
      (set! second-click #t)
      (set! first-position current-position)
-     (displayln "FP")
-     (displayln first-position)
-     (displayln "----")
+     ;(displayln "FP")
+     ;(displayln first-position)
+     ;(displayln "----")
      (set! second-position next-position)
      (change-color)
-     (update-mtx); updates matrix-of-pieces too
      ;(displayln list-of-image)
      ]
     [else empty]
@@ -246,8 +245,9 @@
 
 (define (get-swaping-aux index max-weight-index)
   ;(displayln list-of-tiles)
+  ;(displayln "coordinates") (displayln (list (second (list-ref list-of-tiles max-weight-index)) (third (list-ref list-of-tiles max-weight-index))))
   (cond
-    [(> index (- (length list-of-tiles) 1)) (displayln "coordinates") (displayln (list (second (list-ref list-of-tiles max-weight-index)) (third (list-ref list-of-tiles max-weight-index)))) (list (to-single-index (list (second (list-ref list-of-tiles max-weight-index)) (third (list-ref list-of-tiles max-weight-index))))
+    [(> index (- (length list-of-tiles) 1)) (list (to-single-index (list (second (list-ref list-of-tiles max-weight-index)) (third (list-ref list-of-tiles max-weight-index))))
                                             (to-single-index (list (second (first (list-ref list-of-tiles max-weight-index))) (third (first (list-ref list-of-tiles max-weight-index))))))]
     [(> (first (first (list-ref list-of-tiles index))) (first (first (list-ref list-of-tiles max-weight-index)))) (get-swaping-aux (+ index 1) index)]
     [else (get-swaping-aux (+ 1 index) max-weight-index)]
@@ -258,9 +258,9 @@
 ;QUE SE HAGA UN "CLIC" desde la lógica
 (define (do-IA)
   (run-AI)
-  (displayln "rastreo")
-  (displayln (first (get-swaping-indexes)))
-  (displayln "rastreo---")
+  ;(displayln "rastreo")
+  ;(displayln (first (get-swaping-indexes)))
+  ;(displayln "rastreo---")
   (do-best-move (first (get-swaping-indexes)) (second (get-swaping-indexes)))
   (set! list-of-tiles (list-set list-of-tiles best-move-index (list (first(list-ref list-of-tiles best-move-index)) (second(first(list-ref list-of-tiles best-move-index)))(third(first(list-ref list-of-tiles best-move-index))))))
   )
@@ -327,7 +327,7 @@
     (cond
       [(equal? last-move-color blue) empty]
      [(false? first-click) (set! first-click #t) (set! second-click #f) (set! first-position i) (set! second-position 0)]
-     [else (set! first-click #f)(set! second-click #t)(set! second-position i) (change-color) (set! first-position 0) (if (equal? last-move-color blue) (do-IA) empty) (update-mtx) (displayln matrix-of-pieces) ]
+     [else (set! first-click #f)(set! second-click #t)(set! second-position i) (change-color) (set! first-position 0) (if (equal? last-move-color blue) (do-IA) empty)]
      ))
 
 ; Change the color on the matrix
@@ -346,8 +346,14 @@
   ; Deletes the button
   (delete-button first-position) (delete-button second-position)
   ; Add new buttons
-  (add-button first-position)  (add-button second-position)
-  (winner)]))
+  (add-button first-position) (add-button second-position)
+  (printmtx matrix-of-pieces)
+  (update-mtx)
+  ;(displayln list-of-image)
+  (printmtx matrix-of-pieces)
+  (winner)
+  
+  ]))
 
 
 
@@ -356,7 +362,8 @@
   ;      This is the board panel in this exact position
   (send (list-ref (send board get-children) index)
         ; This is the delete option and the child, [board [panel position [first object or the button, there is only one]]]
-        delete-child (list-ref (send (list-ref (send board get-children) index) get-children) 0)))
+        delete-child (list-ref (send (list-ref (send board get-children) index) get-children) 0))
+  )
 
 ; Add a button in a position on the board
 (define (add-button index)
@@ -364,6 +371,7 @@
   (send (list-ref (send board get-children) index) after-new-child (new button% [parent (list-ref (send board get-children) index)]
              [label (read-bitmap (list-ref list-of-image index))]
              [callback (lambda (button event) (button-click index (list-ref list-of-image index)))]))
+  
   
   )
 
@@ -385,7 +393,7 @@
 ; This function verifies if the blue side won
 (define (blue-winner)
   (cond[
-        (not(false? ( or (equal? (list-ref list-of-image 60) blue)
+        (not(false? ( and (equal? (list-ref list-of-image 60) blue)
                           (equal? (list-ref list-of-image 70) blue)
                           (equal? (list-ref list-of-image 71) blue)
                           (equal? (list-ref list-of-image 80) blue)
@@ -444,13 +452,19 @@
 (define (update-mtx-aux index)
   (cond
     [(> index (- (length list-of-image) 1)) empty]
-    [(equal? (list-ref list-of-image index) blue) (list-set matrix-of-pieces (modulo index 10) (list-set (list-ref matrix-of-pieces (modulo index 10)) (quotient index 10) 1))
+    [(equal? (list-ref list-of-image index) blue) (set! matrix-of-pieces (list-set matrix-of-pieces (quotient index 10) (list-set (list-ref matrix-of-pieces (quotient index 10)) (modulo index 10) 1)))
                                                   (update-mtx-aux (+ index 1))]
-    [(equal? (list-ref list-of-image index) red) (list-set matrix-of-pieces (modulo index 10) (list-set (list-ref matrix-of-pieces (modulo index 10)) (quotient index 10) 2))
+    [(equal? (list-ref list-of-image index) red) (set! matrix-of-pieces (list-set matrix-of-pieces (quotient index 10) (list-set (list-ref matrix-of-pieces (quotient index 10)) (modulo index 10) 2)))
                                                  (update-mtx-aux (+ index 1))]
-    [(equal? (list-ref list-of-image index) black) (list-set matrix-of-pieces (modulo index 10) (list-set (list-ref matrix-of-pieces (modulo index 10)) (quotient index 10) 0))
+    [(equal? (list-ref list-of-image index) black) (set! matrix-of-pieces (list-set matrix-of-pieces (quotient index 10) (list-set (list-ref matrix-of-pieces (quotient index 10)) (modulo index 10) 0)))
                                                    (update-mtx-aux (+ index 1))]
     )
+  )
+
+(define (printmtx mtx)
+  (displayln "La matriz: ")
+  (for ([i mtx])
+    (displayln i))
   )
 
 ;  0  1  2  3  4  5  6  7  8  9
