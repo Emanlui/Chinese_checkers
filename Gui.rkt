@@ -16,23 +16,25 @@
                           '(2 2 2 2 0 0 0 0 0 0))); 9
 
 (define matrix-of-weights (list
-                          '(0 0 1 2 2 10 11 11 11 11)
-                          '(0 0 1 2 8  9 10 11 11 11)
-                          '(1 1 1 2 7  8  9 10 11 11)
-                          '(2 2 4 5 6  7  8  9 10 11)
-                          '(2 2 3 4 5  6  7  8  9 10)
+                          '(0 0 1 2 2 10 50 60 70 99)
+                          '(0 0 1 2 8  9 10 50 60 70)
+                          '(1 1 1 2 7  8  9 12 50 60)
+                          '(1 2 4 5 6  7  8  9 10 50)
+                          '(1 2 3 4 5  6  7  8  9 10)
                           '(1 1 2 3 4  5  6  7  2  2)
                           '(0 1 1 2 3  4  5  2  2  2)
                           '(0 0 1 1 2  3  4  1  1  1)
-                          '(0 0 0 1 1  2  3  1  0  0)
-                          '(0 0 0 0 1  2  2  1  0  0)))
+                          '(0 0 0 1 1  2  3  1  0 0)
+                          '(0 0 0 0 1  1  1  1  0 0)))
+
 
 
 (define list-of-accumulated-weights (list 0 0 0 0 0 0 0 0 0 0))
+(define list-of-valid-moves (list ))
+(define list-of-ending-pieces (list 0 0 0 0 0 0 0 0 0 0 ))
 
 ; Stores the best play
 (define best-move-index 0)
-(define best-move-index-tmp 0)
 
 ; This is the list of pieces of the AI
 ;                   W X Y
@@ -65,32 +67,31 @@
   (if(and (validate-position (- y 1) (+ 1 x)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 x))(- y 1) )) #t #f))  (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list (+ 1 x) (- y 1)))))) void)  
   (if(and (validate-position (- y 1) x)       (if (= 0 (list-ref (list-ref matrix-of-pieces x)(- y 1) )) #t #f))        (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list x (- y 1)))))) void)  
 
-  (set! matrix-of-tmp-pieces matrix-of-pieces)
-  (find-all-moves-jump x y index)
+  (find-all-moves-jump x y index matrix-of-pieces)
      )
   
   
-(define (find-all-moves-jump x y index)
+(define (find-all-moves-jump x y index matrix)
 ;                                          |                            y , x-2           |   y+2   , x-2
 ;            | y , x-1 |  y+1   , x-1      |              |               1      |    1   |   
 ;  y-1   , x |     0   |  y+1   , x        | y-2   , x    |    1    |     0      |    1   |   y+2   , x
 ;  y-1 , x+1 | y , x+1 |                   |              |    1    |     1      |
 ; adds the current position to the list    | y-2   , x+2  |         |   y , x+2
   
-  (if (and (validate-position (- x 2) y)       (or(= 2 (list-ref (list-ref matrix-of-tmp-pieces (- x 1)) y))(= 1 (list-ref (list-ref matrix-of-tmp-pieces (- x 1)) y)))              (= 0 (list-ref (list-ref matrix-of-tmp-pieces (- x 2)) y))) (jump-found x y (- x 2) y index)  void )
-  (if (and (validate-position (- x 2) (+ y 2)) (or(= 2 (list-ref (list-ref matrix-of-tmp-pieces (- x 1)) (+ y 1))) (= 1 (list-ref (list-ref matrix-of-tmp-pieces (- x 1)) (+ y 1)))) (= 0 (list-ref (list-ref matrix-of-tmp-pieces (- x 2)) (+ y 2)))) (jump-found x y (- x 2) (+ y 2) index) void )
-  (if (and (validate-position x (+ y 2))       (or(= 2 (list-ref (list-ref matrix-of-tmp-pieces x) (+ y 1)))(= 1 (list-ref (list-ref matrix-of-tmp-pieces x) (+ y 1))))              (= 0 (list-ref (list-ref matrix-of-tmp-pieces x) (+ y 2)))) (jump-found x y x (+ y 2) index) void )
-  (if (and (validate-position (+ x 2) y)       (or(= 2 (list-ref (list-ref matrix-of-tmp-pieces (+ x 1)) y))(= 1 (list-ref (list-ref matrix-of-tmp-pieces (+ x 1)) y)))              (= 0 (list-ref (list-ref matrix-of-tmp-pieces (+ x 2)) y))) (jump-found x y (+ x 2) y index)  void )
-  (if (and (validate-position (+ x 2) (- y 2)) (or(= 2 (list-ref (list-ref matrix-of-tmp-pieces (+ x 1)) (- y 1)))(= 1 (list-ref (list-ref matrix-of-tmp-pieces (+ x 1)) (- y 1))))  (= 0 (list-ref (list-ref matrix-of-tmp-pieces (+ x 2)) (- y 2)))) (jump-found x y (+ x 2) (- y 2) index) void )
-  (if (and (validate-position x (- y 2))       (or(= 2 (list-ref (list-ref matrix-of-tmp-pieces x) (- y 1)))(= 1 (list-ref (list-ref matrix-of-tmp-pieces x) (- y 1))))              (= 0 (list-ref (list-ref matrix-of-tmp-pieces x) (- y 2)))) (jump-found x y x (- y 2) index) void )
+  (if (and (validate-position (- x 2) y)       (or(= 2 (list-ref (list-ref matrix (- x 1)) y))(= 1 (list-ref (list-ref matrix (- x 1)) y)))              (= 0 (list-ref (list-ref matrix (- x 2)) y))) (jump-found x y (- x 2) y index matrix)  void )
+  (if (and (validate-position (- x 2) (+ y 2)) (or(= 2 (list-ref (list-ref matrix (- x 1)) (+ y 1))) (= 1 (list-ref (list-ref matrix (- x 1)) (+ y 1)))) (= 0 (list-ref (list-ref matrix (- x 2)) (+ y 2)))) (jump-found x y (- x 2) (+ y 2) index matrix) void )
+  (if (and (validate-position x (+ y 2))       (or(= 2 (list-ref (list-ref matrix x) (+ y 1)))(= 1 (list-ref (list-ref matrix x) (+ y 1))))              (= 0 (list-ref (list-ref matrix x) (+ y 2)))) (jump-found x y x (+ y 2) index matrix) void )
+  (if (and (validate-position (+ x 2) y)       (or(= 2 (list-ref (list-ref matrix (+ x 1)) y))(= 1 (list-ref (list-ref matrix (+ x 1)) y)))              (= 0 (list-ref (list-ref matrix (+ x 2)) y))) (jump-found x y (+ x 2) y index matrix)  void )
+  (if (and (validate-position (+ x 2) (- y 2)) (or(= 2 (list-ref (list-ref matrix (+ x 1)) (- y 1)))(= 1 (list-ref (list-ref matrix (+ x 1)) (- y 1))))  (= 0 (list-ref (list-ref matrix (+ x 2)) (- y 2)))) (jump-found x y (+ x 2) (- y 2) index matrix) void )
+  (if (and (validate-position x (- y 2))       (or(= 2 (list-ref (list-ref matrix x) (- y 1)))(= 1 (list-ref (list-ref matrix x) (- y 1))))              (= 0 (list-ref (list-ref matrix x) (- y 2)))) (jump-found x y x (- y 2) index matrix) void )
   
   )
 
-(define (jump-found x y future-x future-y index)
+(define (jump-found x y future-x future-y index matrix)
   ;(display (list x y future-x future-y index))
   (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list future-x future-y)))))
-  (set! matrix-of-tmp-pieces (list-set matrix-of-pieces x (list-set (list-ref matrix-of-pieces x) y -1)))
-  (find-all-moves-jump future-x future-y index) 
+  (set! matrix (list-set matrix x (list-set (list-ref matrix x) y -1)))
+  (find-all-moves-jump future-x future-y index matrix) 
   )
 
 ; This function set the weigth
@@ -151,12 +152,12 @@
 
    (set! matrix (list-set matrix x (list-set (list-ref matrix x) y 0)))
 
-  (max (if (and (validate-position (- x 2) y)       (or(= 2 (list-ref (list-ref matrix (- x 1)) y))(= 1 (list-ref (list-ref matrix (- x 1)) y)))         (= 0 (list-ref (list-ref matrix (- x 2)) y))) (find-max-weigth-jump (- x 2) y matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights (- x 2))y) weigth) )  0 )
-  (if (and (validate-position (- x 2) (+ y 2)) (or(= 2 (list-ref (list-ref matrix (- x 1)) (+ y 1))) (= 1 (list-ref (list-ref matrix (- x 1)) (+ y 1)))) (= 0 (list-ref (list-ref matrix (- x 2)) (+ y 2)))) (find-max-weigth-jump  (- x 2) (+ y 2) matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights (- x 2))(+ y 2)) weigth)) 0 )
-  (if (and (validate-position x (+ y 2))       (or(= 2 (list-ref (list-ref matrix x) (+ y 1)))(= 1 (list-ref (list-ref matrix x) (+ y 1))))              (= 0 (list-ref (list-ref matrix x) (+ y 2)))) (find-max-weigth-jump  x (+ y 2) matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights x)(+ y 2)) weigth)) 0 )
-  (if (and (validate-position (+ x 2) y)       (or(= 2 (list-ref (list-ref matrix (+ x 1)) y))(= 1 (list-ref (list-ref matrix (+ x 1)) y)))              (= 0 (list-ref (list-ref matrix (+ x 2)) y))) (find-max-weigth-jump  (+ x 2) y matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights (+ x 2))y) weigth))  0 )
-  (if (and (validate-position (+ x 2) (- y 2)) (or(= 2 (list-ref (list-ref matrix (+ x 1)) (- y 1)))(= 1 (list-ref (list-ref matrix (+ x 1)) (- y 1))))  (= 0 (list-ref (list-ref matrix (+ x 2)) (- y 2)))) (find-max-weigth-jump  (+ x 2) (- y 2)matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights (+ x 2))(- y 2)) weigth) ) 0 )
-  (if (and (validate-position x (- y 2))       (or(= 2 (list-ref (list-ref matrix x) (- y 1)))(= 1 (list-ref (list-ref matrix x) (- y 1))))              (= 0 (list-ref (list-ref matrix x) (- y 2)))) (find-max-weigth-jump  x (- y 2) matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights x)(- y 2)) weigth)) 0 )
+  (max (if (and (validate-position (- x 2) y)  (or(= 2 (list-ref (list-ref matrix (- x 1)) y))(= 1 (list-ref (list-ref matrix (- x 1)) y)))         (= 0 (list-ref (list-ref matrix (- x 2)) y))) (find-max-weigth-jump (- x 2) y matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights (- x 2))y) weigth) )  0 )
+  (if (and (validate-position (- x 2) (+ y 2)) (or(= 2 (list-ref (list-ref matrix (- x 1)) (+ y 1))) (= 1 (list-ref (list-ref matrix (- x 1)) (+ y 1)))) (= 0 (list-ref (list-ref matrix (- x 2)) (+ y 2)))) (find-max-weigth-jump  (- x 2) (+ y 2) matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights (- x 2))(+ y 2)) weigth)) 0 )
+  (if (and (validate-position x (+ y 2))       (or(= 2 (list-ref (list-ref matrix x) (+ y 1)))(= 1 (list-ref (list-ref matrix x) (+ y 1))))              (= 0 (list-ref (list-ref matrix x) (+ y 2)))) (find-max-weigth-jump  x (+ y 2) matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights x)(+ y 2)) weigth)) 0 )
+  (if (and (validate-position (+ x 2) y)       (or(= 2 (list-ref (list-ref matrix (+ x 1)) y))(= 1 (list-ref (list-ref matrix (+ x 1)) y)))              (= 0 (list-ref (list-ref matrix (+ x 2)) y))) (find-max-weigth-jump  (+ x 2) y matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights (+ x 2))y) weigth))  0 )
+  (if (and (validate-position (+ x 2) (- y 2)) (or(= 2 (list-ref (list-ref matrix (+ x 1)) (- y 1)))(= 1 (list-ref (list-ref matrix (+ x 1)) (- y 1))))  (= 0 (list-ref (list-ref matrix (+ x 2)) (- y 2)))) (find-max-weigth-jump  (+ x 2) (- y 2)matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights (+ x 2))(- y 2)) weigth) ) 0 )
+  (if (and (validate-position x (- y 2))       (or(= 2 (list-ref (list-ref matrix x) (- y 1)))(= 1 (list-ref (list-ref matrix x) (- y 1))))              (= 0 (list-ref (list-ref matrix x) (- y 2)))) (find-max-weigth-jump  x (- y 2) matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights x)(- y 2)) weigth)) 0 )
   )])
   )
 
@@ -172,19 +173,97 @@
         (set! best-move-index index) (get-best-move (+ 1 index))]
        [else(get-best-move (+ 1 index))]))
 
-(define (verify-best-move)
-(if (not(= best-move-index-tmp best-move-index))
-      (set! list-of-accumulated-weights (list-set list-of-accumulated-weights best-move-index-tmp 0))empty)  )
+      
+
+(define (get-valid-moves x y)
+  (if(and (validate-position y (- x 1))       (if (= 0 (list-ref (list-ref matrix-of-pieces (- x 1)) y)) #t #f))        (set! list-of-valid-moves (append list-of-valid-moves (list(list (- x 1) y)))) void)  
+  (if(and (validate-position (+ 1 y) (- x 1)) (if (= 0 (list-ref (list-ref matrix-of-pieces (- x 1)) (+ 1 y) )) #t #f)) (set! list-of-valid-moves (append list-of-valid-moves (list(list (- x 1) (+ 1 y) )))) void)   
+  (if(and (validate-position (+ 1 y) x)       (if (= 0 (list-ref (list-ref matrix-of-pieces x) (+ 1 y))) #t #f))        (set! list-of-valid-moves (append list-of-valid-moves (list(list x (+ 1 y))))) void)  
+  (if(and (validate-position y (+ 1 x))       (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 x))y )) #t #f))        (set! list-of-valid-moves (append list-of-valid-moves (list(list (+ 1 x) y)))) void)  
+  (if(and (validate-position (- y 1) (+ 1 x)) (if (= 0 (list-ref (list-ref matrix-of-pieces (+ 1 x))(- y 1) )) #t #f))  (set! list-of-valid-moves (append list-of-valid-moves (list(list (+ 1 x) (- y 1))))) void)  
+  (if(and (validate-position (- y 1) x)       (if (= 0 (list-ref (list-ref matrix-of-pieces x)(- y 1) )) #t #f))        (set! list-of-valid-moves (append list-of-valid-moves (list(list x (- y 1))))) void)  
+
+  (set! matrix-of-tmp-pieces matrix-of-pieces)
+  (get-valid-moves-aux x y matrix-of-tmp-pieces #f)
+
+     )
+
+(define (get-valid-moves-aux x y matrix add-move)
+
+  (set! matrix (list-set matrix x (list-set (list-ref matrix x) y -1)))
+  (set! list-of-valid-moves (append list-of-valid-moves (list(list x y))))
+  (if (and (validate-position (- x 2) y)       (or(= 2 (list-ref (list-ref matrix (- x 1)) y))(= 1 (list-ref (list-ref matrix (- x 1)) y)))              (= 0 (list-ref (list-ref matrix (- x 2)) y))) (get-valid-moves-aux (- x 2) y matrix #t)  void )
+  (if (and (validate-position (- x 2) (+ y 2)) (or(= 2 (list-ref (list-ref matrix (- x 1)) (+ y 1))) (= 1 (list-ref (list-ref matrix (- x 1)) (+ y 1)))) (= 0 (list-ref (list-ref matrix (- x 2)) (+ y 2)))) (get-valid-moves-aux (- x 2) (+ y 2)matrix #t) void )
+  (if (and (validate-position x (+ y 2))       (or(= 2 (list-ref (list-ref matrix x) (+ y 1)))(= 1 (list-ref (list-ref matrix x) (+ y 1))))              (= 0 (list-ref (list-ref matrix x) (+ y 2)))) (get-valid-moves-aux  x (+ y 2)matrix #t) void )
+  (if (and (validate-position (+ x 2) y)       (or(= 2 (list-ref (list-ref matrix (+ x 1)) y))(= 1 (list-ref (list-ref matrix (+ x 1)) y)))              (= 0 (list-ref (list-ref matrix (+ x 2)) y))) (get-valid-moves-aux (+ x 2) y matrix #t)  void )
+  (if (and (validate-position (+ x 2) (- y 2)) (or(= 2 (list-ref (list-ref matrix (+ x 1)) (- y 1)))(= 1 (list-ref (list-ref matrix (+ x 1)) (- y 1))))  (= 0 (list-ref (list-ref matrix (+ x 2)) (- y 2)))) (get-valid-moves-aux (+ x 2) (- y 2) matrix #t) void )
+  (if (and (validate-position x (- y 2))       (or(= 2 (list-ref (list-ref matrix x) (- y 1)))(= 1 (list-ref (list-ref matrix x) (- y 1))))              (= 0 (list-ref (list-ref matrix x) (- y 2)))) (get-valid-moves-aux x (- y 2) matrix #t) void )
+  
+  )
+
+
+        
+(define (verify-ending-pieces index)
+  (cond[(> index 9) empty]
+       [(and (= (second(list-ref list-of-tiles index)) 0) (= (third(list-ref list-of-tiles index)) 6))
+       
+        (set! list-of-tiles (list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (list-set (first(list-ref list-of-tiles index)) 0 0 ))))
+              (verify-ending-pieces (+ 1 index))]
+       [(and (= (second(list-ref list-of-tiles index)) 0) (= (third(list-ref list-of-tiles index)) 7))
+       
+        (set! list-of-tiles(list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (list-set (first(list-ref list-of-tiles index)) 0 0 ))))
+              (verify-ending-pieces (+ 1 index))]
+       [(and (= (second(list-ref list-of-tiles index)) 0) (= (third(list-ref list-of-tiles index)) 8))
+    
+        (set! list-of-tiles(list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (list-set (first(list-ref list-of-tiles index)) 0 0 ))))
+              (verify-ending-pieces (+ 1 index))]
+       [(and (= (second(list-ref list-of-tiles index)) 0) (= (third(list-ref list-of-tiles index)) 9))
+     
+        (set! list-of-tiles(list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (list-set (first(list-ref list-of-tiles index)) 0 0 ))))
+              (verify-ending-pieces (+ 1 index))]
+       [(and (= (second(list-ref list-of-tiles index)) 1) (= (third(list-ref list-of-tiles index)) 7))
+        
+        (set! list-of-tiles(list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (list-set (first(list-ref list-of-tiles index)) 0 0 ))))
+              (verify-ending-pieces (+ 1 index))]
+       [(and (= (second(list-ref list-of-tiles index)) 1) (= (third(list-ref list-of-tiles index)) 8))
+   
+        (set! list-of-tiles(list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (list-set (first(list-ref list-of-tiles index)) 0 0 ))))
+              (verify-ending-pieces (+ 1 index))]
+       [(and (= (second(list-ref list-of-tiles index)) 1) (= (third(list-ref list-of-tiles index)) 9))
+    
+        (set! list-of-tiles(list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (list-set (first(list-ref list-of-tiles index)) 0 0 ))))
+              (verify-ending-pieces (+ 1 index))]
+       [(and (= (second(list-ref list-of-tiles index)) 2) (= (third(list-ref list-of-tiles index)) 8))
+   
+        (set! list-of-tiles(list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (list-set (first(list-ref list-of-tiles index)) 0 0 ))))
+              (verify-ending-pieces (+ 1 index))]
+       [(and (= (second(list-ref list-of-tiles index)) 2) (= (third(list-ref list-of-tiles index)) 9))
+    
+        (set! list-of-tiles(list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (list-set (first(list-ref list-of-tiles index)) 0 0 ))))
+              (verify-ending-pieces (+ 1 index))]
+       [(and (= (second(list-ref list-of-tiles index)) 3) (= (third(list-ref list-of-tiles index)) 9))
+        
+        (set! list-of-tiles(list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (list-set (first(list-ref list-of-tiles index)) 0 0 ))))
+              (verify-ending-pieces (+ 1 index))]
+       [else (verify-ending-pieces (+ 1 index))]))
+
 
 (define (run-AI)
 
-  (find-all-moves-function 0 )  
+  ;(displayln "Finding all moves...")
+  (find-all-moves-function 0 )
+  ;(displayln "Finding best move...")
   (find-best-move 0)
+  (verify-ending-pieces 0)
+  ;(displayln "Finding ending pieces...")
+  ;(displayln list-of-tiles)
   (get-best-move 0)
+  ;(display "BEST MOVE INDEX: ")
+  ;(displayln best-move-index)
   (add-one-to-not-best-move 0)
-  (verify-best-move)
   
-  (set! best-move-index-tmp best-move-index)
+  (set! list-of-accumulated-weights (list-set list-of-accumulated-weights best-move-index 0))
+  
   (set! matrix-of-pieces (list-set matrix-of-pieces (second(list-ref list-of-tiles best-move-index)) (list-set (list-ref matrix-of-pieces (second(list-ref list-of-tiles best-move-index))) (third(list-ref list-of-tiles best-move-index)) 0)))
   (set! matrix-of-pieces (list-set matrix-of-pieces (second(first(list-ref list-of-tiles best-move-index))) (list-set (list-ref matrix-of-pieces (second(first(list-ref list-of-tiles best-move-index)))) (third(first(list-ref list-of-tiles best-move-index))) 2)))
 
@@ -195,14 +274,21 @@
   ;(displayln list-of-tmp-tiles)
   (set! list-of-tmp-tiles (list
                        (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
-  (displayln "List of tiles")
+
+  (displayln "Matriz")
+  (print-matrix matrix-of-pieces)
+  ;(displayln "List of tiles")
   (displayln list-of-tiles)
   ;(displayln "List of tmp tiles")
   ;(displayln list-of-tmp-tiles)
-  ;(set! list-of-tiles (list-set list-of-tiles best-move-index (list (first(list-ref list-of-tiles best-move-index)) (second(first(list-ref list-of-tiles best-move-index)))(third(first(list-ref list-of-tiles best-move-index))))))
- 
   
   )
+
+(define (print-matrix matrix-of-pieces-tmp)
+  (cond [( empty? matrix-of-pieces-tmp) empty]
+        [else (displayln (first matrix-of-pieces-tmp))
+  (print-matrix (rest matrix-of-pieces-tmp))]
+  ))
 
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -327,12 +413,18 @@
     (cond
       [(equal? last-move-color blue) empty]
      [(false? first-click) (set! first-click #t) (set! second-click #f) (set! first-position i) (set! second-position 0)]
-     [else (set! first-click #f)(set! second-click #t)(set! second-position i) (change-color) (set! first-position 0) (if (equal? last-move-color blue) (do-IA) empty)]
+     [else (set! first-click #f)(set! second-click #t)(set! second-position i) (get-valid-moves (quotient first-position 10) (remainder first-position 10))  (change-color) (set! list-of-valid-moves (list )) (set! first-position 0) (if (equal? last-move-color blue) (do-IA) empty)]
      ))
+
+(define (validate-blue-move lst position)
+   (cond
+      [(empty? lst) #f]
+      [(equal? (first lst) (list (quotient position 10) (remainder position 10)) )  #t]
+      [else (validate-blue-move (rest lst) position)]))
 
 ; Change the color on the matrix
 (define (change-color)
-  (cond [(and (not(equal? last-move-color (list-ref list-of-image first-position)))(validate-move first-position second-position) (not(equal? first-position second-position)) (not(equal? (list-ref list-of-image first-position) black)))
+  (cond [(and (not(equal? last-move-color (list-ref list-of-image first-position))) (not(equal? first-position second-position)) (not(equal? (list-ref list-of-image first-position) black)) (or (equal? (list-ref list-of-image first-position) red)(validate-blue-move list-of-valid-moves second-position)))
   ; Change the color label
   (change-color-turn)
   ; Sets the new "last-move-color", this variable stores the last button color that was move
@@ -347,10 +439,8 @@
   (delete-button first-position) (delete-button second-position)
   ; Add new buttons
   (add-button first-position) (add-button second-position)
-  (printmtx matrix-of-pieces)
   (update-mtx)
   ;(displayln list-of-image)
-  (printmtx matrix-of-pieces)
   (winner)
   
   ]))
@@ -461,11 +551,11 @@
     )
   )
 
-(define (printmtx mtx)
-  (displayln "La matriz: ")
-  (for ([i mtx])
-    (displayln i))
-  )
+;(define (printmtx mtx)
+;  (displayln "La matriz: ")
+;  (for ([i mtx])
+;    (displayln i))
+;  )
 
 ;  0  1  2  3  4  5  6  7  8  9
 ; 10 11 12 13 14 15 16 17 18 19
