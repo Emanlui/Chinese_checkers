@@ -27,8 +27,6 @@
                           '(0 0 0 1 1  2  3  1  0 0)
                           '(0 0 0 0 1  1  1  1  0 0)))
 
-
-
 (define list-of-accumulated-weights (list 0 0 0 0 0 0 0 0 0 0))
 (define list-of-valid-moves (list ))
 (define list-of-ending-pieces (list 0 0 0 0 0 0 0 0 0 0 ))
@@ -247,8 +245,10 @@
               (verify-ending-pieces (+ 1 index))]
        [else (verify-ending-pieces (+ 1 index))]))
 
+(define ms (current-inexact-milliseconds))
 
 (define (run-AI)
+  (set! ms (current-inexact-milliseconds))
 
   ;(displayln "Finding all moves...")
   (find-all-moves-function 0 )
@@ -275,13 +275,14 @@
   (set! list-of-tmp-tiles (list
                        (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
 
-  (displayln "Matriz")
-  (print-matrix matrix-of-pieces)
+  ;(displayln "Matriz")
+  ;(print-matrix matrix-of-pieces)
   ;(displayln "List of tiles")
-  (displayln list-of-tiles)
+  ;(displayln list-of-tiles)
   ;(displayln "List of tmp tiles")
   ;(displayln list-of-tmp-tiles)
-  
+  (displayln "Tiempo en ms:")
+  (displayln (- (current-inexact-milliseconds) ms))
   )
 
 (define (print-matrix matrix-of-pieces-tmp)
