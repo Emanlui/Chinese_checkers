@@ -377,6 +377,14 @@
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+; Name:        do-best-move
+; Description: This function sets variables and make swap when AI plays its move
+; Input:
+;         current-position = current position in list-of-image
+;         next-position = next position in list-of-image
+; Output: Empty if AI can't play anything
+;         swap colors in GUI if AI plays
+; Restrictions: None
 (define (do-best-move current-position next-position);currentpos and nextpos are both a single nomber (refering list-of-image)
   (cond
     [(equal? first-click #f)
@@ -387,17 +395,32 @@
      (change-color)]
     [else empty]))
 
-;Get a pair and returns a single index for list logic
+; Name:        to-single-index
+; Description: This function convert a XY pair into a unique integer
+; Input:
+;         XY pair
+; Output: XY represented in list-of-image
+; Restrictions: None
 (define (to-single-index lst)
   (+ (* (first lst) 10) (second lst))
   )
 
-;This function returns a list
-;having two single indexes (current-place and next-place),
-;something like (65 73)
+; Name:        get-swaping-indexes
+; Description: This function returns a list having two single indexes (current-place and next-place),
+; Input:
+;         None
+; Output: List
+; Restrictions: None
 (define (get-swaping-indexes)
   (get-swaping-aux 0 0))
 
+; Name:        get-swaping-aux
+; Description: This function returns just help its parent function
+; Input:
+;         max-weight: will take the maximun weight
+;         index: to take different positions
+; Output: List
+; Restrictions: None
 (define (get-swaping-aux index max-weight-index)
   ;(displayln list-of-tiles)
   ;(displayln "coordinates") (displayln (list (second (list-ref list-of-tiles max-weight-index)) (third (list-ref list-of-tiles max-weight-index))))
@@ -409,18 +432,35 @@
     )
   )
 
+; Name:        do-IA
+; Description: This functions make the AI's movements
+; Input:
+;         None
+; Output: None
+; Restrictions: None
 (define (do-IA)
   (run-AI)
   (do-best-move (first (get-swaping-indexes)) (second (get-swaping-indexes)))
   (set! list-of-tiles (list-set list-of-tiles best-move-index (list (first(list-ref list-of-tiles best-move-index)) (second(first(list-ref list-of-tiles best-move-index)))(third(first(list-ref list-of-tiles best-move-index))))))
   )
 
+; Name:        frame
+; Description: A frame to place buttons
+; Input:
+;         None
+; Output: None
+; Restrictions: None
 (define frame (new frame%
                  [label "Chinese checkers"]
                  ;[stretchable-width #f] [stretchable-height #f]
                  [height 700][width 700]
                 ))
-
+; Name:        board
+; Description: This board will be the table to place frames and buttons
+; Input:
+;         None
+; Output: None
+; Restrictions: None
 (define board
   (instantiate table-panel%
     (frame)
@@ -428,6 +468,12 @@
     (alignment '(center center))
     (dimensions '(10 10))))
 
+; Name:        message-turn
+; Description: send a message to notice about the turns
+; Input:
+;         None
+; Output: None
+; Restrictions: None
 (define message-turn (new message%
   [parent frame]
   [stretchable-width #t]
@@ -460,7 +506,12 @@
         red red red black black black black black black black
         red red red red black black black black black black))
 
-
+; Name:        grid-board
+; Description: Builds the table
+; Input:
+;         None
+; Output: None
+; Restrictions: None
 (define grid-board
 (for ((i (in-range 100)))
   (let ((child (new panel%
@@ -473,6 +524,13 @@
              [callback (lambda (button event) (button-click i (list-ref list-of-image i)))])
     )))
 
+; Name:        button-click
+; Description: That's the function trigered by the buttons
+; Input:
+;         i: index of the button
+;         color: color of the button
+; Output: None
+; Restrictions: None
 (define (button-click i color)
     (cond
       [(equal? last-move-color blue) empty]
@@ -480,13 +538,25 @@
      [else (set! first-click #f)(set! second-click #t)(set! second-position i) (get-valid-moves (quotient first-position 10) (remainder first-position 10))  (change-color) (set! list-of-valid-moves (list )) (set! first-position 0) (if (equal? last-move-color blue) (do-IA) empty)]
      ))
 
+; Name:        validate-blue-move
+; Description: This function validates thath the next move is a right move
+; Input:
+;         lst: list of movements
+;         position: position of the list
+; Output: False when empty
+; Restrictions: None
 (define (validate-blue-move lst position)
    (cond
       [(empty? lst) #f]
       [(equal? (first lst) (list (quotient position 10) (remainder position 10)) )  #t]
       [else (validate-blue-move (rest lst) position)]))
 
-; Change the color on the matrix
+; Name:        change-color
+; Description: This funtion validates, execute and swap the colors in Logic and GUI
+; Input:
+;         None
+; Output: False when empty
+; Restrictions: None
 (define (change-color)
   (cond [(and (not(equal? last-move-color (list-ref list-of-image first-position))) (not(equal? first-position second-position)) (not(equal? (list-ref list-of-image first-position) black)) (or (equal? (list-ref list-of-image first-position) red)(validate-blue-move list-of-valid-moves second-position)))
   ; Change the color label
@@ -511,7 +581,12 @@
 
 
 
-; Delete a button on the board
+; Name:        delete-button
+; Description: this function deletes a button from the board
+; Input:
+;         index: position of the button
+; Output: None
+; Restrictions: None
 (define (delete-button index)
   ;      This is the board panel in this exact position
   (send (list-ref (send board get-children) index)
@@ -519,7 +594,12 @@
         delete-child (list-ref (send (list-ref (send board get-children) index) get-children) 0))
   )
 
-; Add a button in a position on the board
+; Name:        add-button
+; Description: this function adds a button to the board
+; Input:
+;         index: position of the button
+; Output: None
+; Restrictions: None
 (define (add-button index)
   ;      This gets the panel object on the grid    create a new child     And this is the new child
   (send (list-ref (send board get-children) index) after-new-child (new button% [parent (list-ref (send board get-children) index)]
@@ -528,9 +608,12 @@
   
   
   )
-
-; This function verifies if there is a winner, calling blue-winner and red-winner, if it returns true, then it popups a windows
-; and also disable all buttons
+; Name:        winner
+; Description: This funtion validates whether the winner is blue or red
+; Input:
+;         None
+; Output: None
+; Restrictions: None
 (define (winner)
   (cond [(not(false? (blue-winner))) (disable-buttons) (define dialog (new dialog% [label "Winner winner chicken dinner"][height 200][width 200]))
   (define msg (new message% [parent dialog]
@@ -539,12 +622,22 @@
   (define msg (new message% [parent dialog]
                           [label "Red player wins"]))(send dialog show #t)  ]))
 
-; This function disable all buttons
+; Name:        disable-buttons
+; Description: this functions disables buttons so user can't clic on them
+; Input:
+;         None
+; Output: None
+; Restrictions: None
 (define (disable-buttons)
   (for ([j (send board get-children)]) ; iterator binding
   (send (list-ref (send j get-children) 0) enable #f)))
 
-; This function verifies if the blue side won
+; Name:        blue-winner
+; Description: this function supports function winner so can decide the winner
+; Input:
+;         None
+; Output: None
+; Restrictions: None
 (define (blue-winner)
   (cond[
         (not(false? ( and (equal? (list-ref list-of-image 60) blue)
@@ -559,7 +652,12 @@
                           (equal? (list-ref list-of-image 93) blue)))) #t]
        [else #f]))
 
-; This function verifies if the red side won
+; Name:        red-winner
+; Description: this function supports function winner so can decide the winner
+; Input:
+;         None
+; Output: None
+; Restrictions: None
 (define (red-winner)
   (cond[
         (not(false? ( and (equal? (list-ref list-of-image 6) red)
@@ -574,21 +672,13 @@
                           (equal? (list-ref list-of-image 39) red)))) #t]
        [else #f]))
 
-; This function validates the move
-(define (validate-move x y)
-  (cond
-    [(equal? last-move-color blue) #t]
-    [(or 
-             (equal? x (+ y 10))
-             (and (equal? x (+ y 9)) (not (equal? (modulo y 10) 0) ) );pasar de 39 a 30
-             (and (equal? x (+ y 1)) (not (equal? (modulo x 10) 0) ) ); pasar de 39 a 40
-             (and(equal? x (- y 1)) (not (equal? (modulo y 10) 0) ) ); pasar de 40 a 39
-             (and (equal? x (- y 9)) (not (equal? (modulo x 10) 0) ) );pasar de 30 a 39
-             (equal? x (- y 10))
-             ) #t]
-       [else #f])); (not (equal? (- y (- y -9)) 9))
 
-; This function changes the label turn
+; Name:        change-color-turn
+; Description: this function send a message to notice about the current turn
+; Input:
+;         None
+; Output: None
+; Restrictions: None
 (define (change-color-turn)
   (cond [(equal? last-move-color blue) (send message-turn set-label "Now its the turn for: BLUE")]
         [(equal? last-move-color red) (send message-turn set-label "Now its the turn for: RED")]))
@@ -597,12 +687,22 @@
 (send frame show #t)
 
 
-;This function updates matrix of pieces
-;by using list-of-image data
+; Name:        update-mtx
+; Description: This function is something like replication with to lists to keep them update
+; Input:
+;         None
+; Output: empty when finish
+; Restrictions: None
 (define (update-mtx)
   (update-mtx-aux 0)
   )
 
+; Name:        update-mtx-aux
+; Description: This function supports its parent
+; Input:
+;         index to move
+; Output: empty when finish
+; Restrictions: None
 (define (update-mtx-aux index)
   (cond
     [(> index (- (length list-of-image) 1)) empty]
@@ -615,11 +715,6 @@
     )
   )
 
-;(define (printmtx mtx)
-;  (displayln "La matriz: ")
-;  (for ([i mtx])
-;    (displayln i))
-;  )
 
 ;  0  1  2  3  4  5  6  7  8  9
 ; 10 11 12 13 14 15 16 17 18 19
