@@ -2,7 +2,10 @@
 (require racket/gui/base)
 (require table-panel)
 
+; Temporary matrix
 (define matrix-of-tmp-pieces 0)
+
+; Matrix of all the piece position
 (define matrix-of-pieces (list
                           '(0 0 0 0 0 0 1 1 1 1)  ; 0
                           '(0 0 0 0 0 0 0 1 1 1)  ; 1
@@ -15,6 +18,7 @@
                           '(2 2 2 0 0 0 0 0 0 0)  ; 8
                           '(2 2 2 2 0 0 0 0 0 0))); 9
 
+; Matrix of weigths
 (define matrix-of-weights (list
                           '(-inf.0 -inf.0 1 2 2 10 50 70 85 99)
                           '(-inf.0 -inf.0 1 2 8  9 10 50 70 80)
@@ -27,8 +31,13 @@
                           '(0 0 0 1 1  2  3  1  -inf.0 -inf.0)
                           '(0 0 0 0 1  1  1  1  -inf.0 -inf.0)))
 
+; Stores the weigth if the piece is not moving
 (define list-of-accumulated-weights (list 0 0 0 0 0 0 0 0 0 0))
+
+; This is the list of valid moves
 (define list-of-valid-moves (list ))
+
+; Stores a value if a piece is in the end spot
 (define list-of-ending-pieces (list 0 0 0 0 0 0 0 0 0 0 ))
 
 ; Stores the best play
@@ -45,18 +54,31 @@
                        (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
 
 
-
-; This function validates the given position and also that the position is not the same type of piece
+; Name:        validate-position
+; Description: This function validates the given position and also that the position is not the same type of piece
+; Input:
+;         x = x position in the matrix
+;         y = y position in the matrix
+; Output: True if the position is valid in the matrix
+;         False if the position is out of bounds
+; Restrictions: None
 (define (validate-position x y)
   (cond [(or (< x 0) (< y 0) (> x 9) (> y 9)) #f]
         [else #t]))
 
-(define (find-all-moves x y index)                                                            
+; Name:        validate-position
+; Description: This function finds all moves with a coordinate
 ;                                          |                            y , x-2           |   y+2   , x-2
 ;            | y , x-1 |  y+1   , x-1      |              |               1      |    1   |   
 ;  y-1   , x |     0   |  y+1   , x        | y-2   , x    |    1    |     0      |    1   |   y+2   , x
 ;  y-1 , x+1 | y , x+1 |                   |              |    1    |     1      |
-; adds the current position to the list    | y-2   , x+2  |         |   y , x+2
+;                                          | y-2   , x+2  |         |   y , x+2
+; Input:
+;         x = x position in the matrix of the piece
+;         y = y position in the matrix of the piece
+; Output: None
+; Restrictions: None
+(define (find-all-moves x y index)                                                            
   
   (if(and (validate-position y (- x 1))       (if (= 0 (list-ref (list-ref matrix-of-pieces (- x 1)) y)) #t #f))        (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list (- x 1) y))))) void)  
   (if(and (validate-position (+ 1 y) (- x 1)) (if (= 0 (list-ref (list-ref matrix-of-pieces (- x 1)) (+ 1 y) )) #t #f)) (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list (- x 1) (+ 1 y) ))))) void)   
@@ -68,14 +90,22 @@
   (find-all-moves-jump x y index matrix-of-pieces)
      )
   
-  
-(define (find-all-moves-jump x y index matrix)
+; Name:        find-all-moves-jump
+; Description: This function finds all jump moves with a coordinate
 ;                                          |                            y , x-2           |   y+2   , x-2
 ;            | y , x-1 |  y+1   , x-1      |              |               1      |    1   |   
 ;  y-1   , x |     0   |  y+1   , x        | y-2   , x    |    1    |     0      |    1   |   y+2   , x
 ;  y-1 , x+1 | y , x+1 |                   |              |    1    |     1      |
-; adds the current position to the list    | y-2   , x+2  |         |   y , x+2
-  
+;                                          | y-2   , x+2  |         |   y , x+2
+; Input:
+;         x = x position in the matrix of the piece
+;         y = y position in the matrix of the piece
+;         index = the index of the piece in the list-of-pieces
+;         matrix = temp matrix for all the jumps
+; Output: None
+; Restrictions: None 
+(define (find-all-moves-jump x y index matrix)
+ 
   (if (and (validate-position (- x 2) y)       (or(= 2 (list-ref (list-ref matrix (- x 1)) y))(= 1 (list-ref (list-ref matrix (- x 1)) y)))              (= 0 (list-ref (list-ref matrix (- x 2)) y))) (jump-found x y (- x 2) y index matrix)  void )
   (if (and (validate-position (- x 2) (+ y 2)) (or(= 2 (list-ref (list-ref matrix (- x 1)) (+ y 1))) (= 1 (list-ref (list-ref matrix (- x 1)) (+ y 1)))) (= 0 (list-ref (list-ref matrix (- x 2)) (+ y 2)))) (jump-found x y (- x 2) (+ y 2) index matrix) void )
   (if (and (validate-position x (+ y 2))       (or(= 2 (list-ref (list-ref matrix x) (+ y 1)))(= 1 (list-ref (list-ref matrix x) (+ y 1))))              (= 0 (list-ref (list-ref matrix x) (+ y 2)))) (jump-found x y x (+ y 2) index matrix) void )
@@ -85,18 +115,40 @@
   
   )
 
+; Name:         jump-found
+; Description:  This function adds the valid jumps to the list-of-tmp-tiles, set the temp matrix to -1
+;               to avoid infinite loops
+; Input:   
+;         x = The index to add in the X position
+;         y = The index to add in the Y position
+;         future-x = future-x position in the matrix of the piece
+;         future-y = future-y position in the matrix of the piece
+;         index = the index of the piece in the list-of-pieces
+;         matrix = temp matrix for all the jumps
+; Output: None
+; Restrictions: None 
 (define (jump-found x y future-x future-y index matrix)
-  ;(display (list x y future-x future-y index))
   (set! list-of-tmp-tiles (list-set list-of-tmp-tiles index (append (list-ref list-of-tmp-tiles index) (list (list future-x future-y)))))
   (set! matrix (list-set matrix x (list-set (list-ref matrix x) y -1)))
   (find-all-moves-jump future-x future-y index matrix) 
   )
 
-; This function set the weigth
+; Name:          jump-found
+; Description:   This function loops the list of pieces to find all moves
+; Input:   
+;         index = The actual index
+; Output: None
+; Restrictions: None
 (define (find-all-moves-function index)
   (cond[(> index 9)]
        [else (find-all-moves (second (list-ref list-of-tiles index)) (third (list-ref list-of-tiles index)) index) (find-all-moves-function (+ index 1)) ]))
 
+; Name:          find-best-move
+; Description:   This function loops the list of pieces to find all moves
+; Input:   
+;         index = The actual index
+; Output: None
+; Restrictions: None
 (define (find-best-move index)
   (cond[(> index 9)]
        [else
@@ -105,66 +157,85 @@
         (set! list-of-tiles (list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (find-best-move-aux (list-ref list-of-tmp-tiles index) (list 0 0 0)(list-ref list-of-accumulated-weights index)))))
         (find-best-move (+ 1 index))]))
 
+; Name:          find-best-move-aux
+; Description:   This function finds the best move from all the valid moves
+; Input:   
+;         index = The actual index
+;         lst = The list of moves
+;         weigth = The best weigth
+;         accumulated-weigth = Adds to the weigth the accumulated
+; Output: None
+; Restrictions: None
 (define (find-best-move-aux lst weigth accumulated-weigth)
   (cond [(empty? lst) weigth]
   [(< (first weigth) (find-max-weigth (first(first lst)) (second(first lst)) matrix-of-pieces 2 (+ accumulated-weigth (list-ref(list-ref matrix-of-weights (first(first lst)))(second(first lst))))))
-   ;(display "NEW MAX WEIGTH: ")
-   ;(displayln (find-max-weigth (first(first lst)) (second(first lst)) matrix-of-pieces 2 (+ accumulated-weigth (list-ref(list-ref matrix-of-weights (first(first lst)))(second(first lst))))))
    (find-best-move-aux (rest lst) (list (find-max-weigth (first(first lst)) (second(first lst)) matrix-of-pieces 2 (+ accumulated-weigth (list-ref(list-ref matrix-of-weights (first(first lst)))(second(first lst))))) (first(first lst))(second (first lst))) accumulated-weigth)]
   [else
-   ;(display "Weigth: ")
-   ;(displayln weigth)
-   ;(display "Found WEIGTH: ")
-   ;(displayln (list-ref(list-ref matrix-of-weights (first(first lst)))(second(first lst))))
    (find-best-move-aux (rest lst) weigth accumulated-weigth)]))
 
+; Name:          find-max-weigth
+; Description:   This function finds the best move from all the valid moves
+; Input:   
+;         x  = the actual position in X
+;         y  = the actual position in Y
+;         matrix = The temp matrix of the actual level, it changes if there is a jump
+;         level = The level rigth now, this is the tree level
+;         weigth
+; Output: None
+; Restrictions: None
 (define (find-max-weigth x y matrix level weigth)
-  (cond [(= level 3) ;(display "Level:")    
-                     ;(displayln level)
-                     ;(display "Weigth:")    
-                     ;(displayln weigth)
-                     weigth]
-        [else
+  (cond [(= level 3)weigth]
+        [else (set! matrix (list-set matrix x (list-set (list-ref matrix x) y 0)))
+              (max 
+              (if(and (validate-position y (- x 1))       (if (= 0 (list-ref (list-ref matrix (- x 1)) y)) #t #f))        (find-max-weigth (- x 1) y matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights (- x 1))y) weigth)) 0)  
+              (if(and (validate-position (+ 1 y) (- x 1)) (if (= 0 (list-ref (list-ref matrix (- x 1)) (+ 1 y) )) #t #f)) (find-max-weigth (- x 1) (+ 1 y) matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights (- x 1))(+ 1 y)) weigth)) 0)   
+              (if(and (validate-position (+ 1 y) x)       (if (= 0 (list-ref (list-ref matrix x) (+ 1 y))) #t #f))        (find-max-weigth x (+ 1 y) matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights x)(+ 1 y)) weigth)) 0)  
+              (if(and (validate-position y (+ 1 x))       (if (= 0 (list-ref (list-ref matrix (+ 1 x))y )) #t #f))        (find-max-weigth (+ 1 x) y matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights (+ 1 x))y) weigth)) 0)  
+              (if(and (validate-position (- y 1) (+ 1 x)) (if (= 0 (list-ref (list-ref matrix (+ 1 x))(- y 1) )) #t #f))  (find-max-weigth (+ 1 x) (- y 1) matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights (+ 1 x))(- y 1)) weigth)) 0)  
+              (if(and (validate-position (- y 1) x)       (if (= 0 (list-ref (list-ref matrix x)(- y 1) )) #t #f))        (find-max-weigth x (- y 1) matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights x)(- y 1)) weigth)) 0)  
 
-   ;(display "Level:")    
-   ;(displayln level)
-   ;(display "Weigth:")    
-   ;(displayln weigth)
-   (set! matrix (list-set matrix x (list-set (list-ref matrix x) y 0)))
-   
-   (max 
-  (if(and (validate-position y (- x 1))       (if (= 0 (list-ref (list-ref matrix (- x 1)) y)) #t #f))        (find-max-weigth (- x 1) y matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights (- x 1))y) weigth)) 0)  
-  (if(and (validate-position (+ 1 y) (- x 1)) (if (= 0 (list-ref (list-ref matrix (- x 1)) (+ 1 y) )) #t #f)) (find-max-weigth (- x 1) (+ 1 y) matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights (- x 1))(+ 1 y)) weigth)) 0)   
-  (if(and (validate-position (+ 1 y) x)       (if (= 0 (list-ref (list-ref matrix x) (+ 1 y))) #t #f))        (find-max-weigth x (+ 1 y) matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights x)(+ 1 y)) weigth)) 0)  
-  (if(and (validate-position y (+ 1 x))       (if (= 0 (list-ref (list-ref matrix (+ 1 x))y )) #t #f))        (find-max-weigth (+ 1 x) y matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights (+ 1 x))y) weigth)) 0)  
-  (if(and (validate-position (- y 1) (+ 1 x)) (if (= 0 (list-ref (list-ref matrix (+ 1 x))(- y 1) )) #t #f))  (find-max-weigth (+ 1 x) (- y 1) matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights (+ 1 x))(- y 1)) weigth)) 0)  
-  (if(and (validate-position (- y 1) x)       (if (= 0 (list-ref (list-ref matrix x)(- y 1) )) #t #f))        (find-max-weigth x (- y 1) matrix (+ 1 level) (+ (list-ref(list-ref matrix-of-weights x)(- y 1)) weigth)) 0)  
-
-  (find-max-weigth-jump x y matrix (+ 1 level) weigth)
-   )
+              (find-max-weigth-jump x y matrix (+ 1 level) weigth))
    ]))
 
+; Name:          find-max-weigth-jump
+; Description:   This function finds the max weigth for all the jumps
+; Input:   
+;         x  = the actual position in X
+;         y  = the actual position in Y
+;         matrix = The temp matrix of the actual level, it changes if there is a jump
+;         level = The level rigth now, this is the tree level
+;         weigth
+; Output: None
+; Restrictions: None
 (define (find-max-weigth-jump x y matrix level weigth)
 (cond [(= level 3) weigth]
-        [else
+        [else(set! matrix (list-set matrix x (list-set (list-ref matrix x) y 0)))
 
-   (set! matrix (list-set matrix x (list-set (list-ref matrix x) y 0)))
+             (max (if (and (validate-position (- x 2) y)  (or(= 2 (list-ref (list-ref matrix (- x 1)) y))(= 1 (list-ref (list-ref matrix (- x 1)) y)))         (= 0 (list-ref (list-ref matrix (- x 2)) y))) (find-max-weigth-jump (- x 2) y matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights (- x 2))y) weigth) )  0 )
+                  (if (and (validate-position (- x 2) (+ y 2)) (or(= 2 (list-ref (list-ref matrix (- x 1)) (+ y 1))) (= 1 (list-ref (list-ref matrix (- x 1)) (+ y 1)))) (= 0 (list-ref (list-ref matrix (- x 2)) (+ y 2)))) (find-max-weigth-jump  (- x 2) (+ y 2) matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights (- x 2))(+ y 2)) weigth)) 0 )
+                  (if (and (validate-position x (+ y 2))       (or(= 2 (list-ref (list-ref matrix x) (+ y 1)))(= 1 (list-ref (list-ref matrix x) (+ y 1))))              (= 0 (list-ref (list-ref matrix x) (+ y 2)))) (find-max-weigth-jump  x (+ y 2) matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights x)(+ y 2)) weigth)) 0 )
+                  (if (and (validate-position (+ x 2) y)       (or(= 2 (list-ref (list-ref matrix (+ x 1)) y))(= 1 (list-ref (list-ref matrix (+ x 1)) y)))              (= 0 (list-ref (list-ref matrix (+ x 2)) y))) (find-max-weigth-jump  (+ x 2) y matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights (+ x 2))y) weigth))  0 )
+                  (if (and (validate-position (+ x 2) (- y 2)) (or(= 2 (list-ref (list-ref matrix (+ x 1)) (- y 1)))(= 1 (list-ref (list-ref matrix (+ x 1)) (- y 1))))  (= 0 (list-ref (list-ref matrix (+ x 2)) (- y 2)))) (find-max-weigth-jump  (+ x 2) (- y 2)matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights (+ x 2))(- y 2)) weigth) ) 0 )
+                  (if (and (validate-position x (- y 2))       (or(= 2 (list-ref (list-ref matrix x) (- y 1)))(= 1 (list-ref (list-ref matrix x) (- y 1))))              (= 0 (list-ref (list-ref matrix x) (- y 2)))) (find-max-weigth-jump  x (- y 2) matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights x)(- y 2)) weigth)) 0 )
+                  )]))
 
-  (max (if (and (validate-position (- x 2) y)  (or(= 2 (list-ref (list-ref matrix (- x 1)) y))(= 1 (list-ref (list-ref matrix (- x 1)) y)))         (= 0 (list-ref (list-ref matrix (- x 2)) y))) (find-max-weigth-jump (- x 2) y matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights (- x 2))y) weigth) )  0 )
-  (if (and (validate-position (- x 2) (+ y 2)) (or(= 2 (list-ref (list-ref matrix (- x 1)) (+ y 1))) (= 1 (list-ref (list-ref matrix (- x 1)) (+ y 1)))) (= 0 (list-ref (list-ref matrix (- x 2)) (+ y 2)))) (find-max-weigth-jump  (- x 2) (+ y 2) matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights (- x 2))(+ y 2)) weigth)) 0 )
-  (if (and (validate-position x (+ y 2))       (or(= 2 (list-ref (list-ref matrix x) (+ y 1)))(= 1 (list-ref (list-ref matrix x) (+ y 1))))              (= 0 (list-ref (list-ref matrix x) (+ y 2)))) (find-max-weigth-jump  x (+ y 2) matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights x)(+ y 2)) weigth)) 0 )
-  (if (and (validate-position (+ x 2) y)       (or(= 2 (list-ref (list-ref matrix (+ x 1)) y))(= 1 (list-ref (list-ref matrix (+ x 1)) y)))              (= 0 (list-ref (list-ref matrix (+ x 2)) y))) (find-max-weigth-jump  (+ x 2) y matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights (+ x 2))y) weigth))  0 )
-  (if (and (validate-position (+ x 2) (- y 2)) (or(= 2 (list-ref (list-ref matrix (+ x 1)) (- y 1)))(= 1 (list-ref (list-ref matrix (+ x 1)) (- y 1))))  (= 0 (list-ref (list-ref matrix (+ x 2)) (- y 2)))) (find-max-weigth-jump  (+ x 2) (- y 2)matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights (+ x 2))(- y 2)) weigth) ) 0 )
-  (if (and (validate-position x (- y 2))       (or(= 2 (list-ref (list-ref matrix x) (- y 1)))(= 1 (list-ref (list-ref matrix x) (- y 1))))              (= 0 (list-ref (list-ref matrix x) (- y 2)))) (find-max-weigth-jump  x (- y 2) matrix (+ 1 level) (+ 5 (list-ref(list-ref matrix-of-weights x)(- y 2)) weigth)) 0 )
-  )])
-  )
-
+; Name:          add-one-to-not-best-move
+; Description:   This function adds 1 to all not moving pieces
+; Input:   
+;         index  = The actual index of the list
+; Output: None
+; Restrictions: None
 (define (add-one-to-not-best-move index)
   (cond[(> index 9) empty]
        [(= index best-move-index)(add-one-to-not-best-move (+ 1 index))]
-       [else(set! list-of-accumulated-weights (list-set list-of-accumulated-weights index (+ 1 (list-ref list-of-accumulated-weights index))))(add-one-to-not-best-move (+ 1 index))])
-  )
+       [else(set! list-of-accumulated-weights (list-set list-of-accumulated-weights index (+ 1 (list-ref list-of-accumulated-weights index))))(add-one-to-not-best-move (+ 1 index))]))
 
+; Name:          get-best-move
+; Description:   This function loops the list to find the best weigth
+; Input:   
+;         index  = The actual index of the list
+; Output: None
+; Restrictions: None
 (define (get-best-move index)
   (cond[(> index 9) empty]
        [(> (first(first(list-ref list-of-tiles index))) (first(first(list-ref list-of-tiles best-move-index))))
@@ -172,7 +243,13 @@
        [else(get-best-move (+ 1 index))]))
 
       
-
+; Name:          get-valid-moves
+; Description:   This function finds the max weigth for all the jumps
+; Input:   
+;         x  = the actual position in X
+;         y  = the actual position in Y
+; Output: None
+; Restrictions: None
 (define (get-valid-moves x y)
   (if(and (validate-position y (- x 1))       (if (= 0 (list-ref (list-ref matrix-of-pieces (- x 1)) y)) #t #f))        (set! list-of-valid-moves (append list-of-valid-moves (list(list (- x 1) y)))) void)  
   (if(and (validate-position (+ 1 y) (- x 1)) (if (= 0 (list-ref (list-ref matrix-of-pieces (- x 1)) (+ 1 y) )) #t #f)) (set! list-of-valid-moves (append list-of-valid-moves (list(list (- x 1) (+ 1 y) )))) void)   
@@ -182,10 +259,17 @@
   (if(and (validate-position (- y 1) x)       (if (= 0 (list-ref (list-ref matrix-of-pieces x)(- y 1) )) #t #f))        (set! list-of-valid-moves (append list-of-valid-moves (list(list x (- y 1))))) void)  
 
   (set! matrix-of-tmp-pieces matrix-of-pieces)
-  (get-valid-moves-aux x y matrix-of-tmp-pieces #f)
+  (get-valid-moves-aux x y matrix-of-tmp-pieces #f))
 
-     )
-
+; Name:          get-valid-moves-aux
+; Description:   This function finds the max weigth for all the jumps
+; Input:   
+;         x  = the actual position in X
+;         y  = the actual position in Y
+;         matrix = This is the tmp matrix for this piece
+;         add-move = If it is true, then adds it to the list of valid moves
+; Output: None
+; Restrictions: None
 (define (get-valid-moves-aux x y matrix add-move)
 
   (set! matrix (list-set matrix x (list-set (list-ref matrix x) y -1)))
@@ -195,12 +279,15 @@
   (if (and (validate-position x (+ y 2))       (or(= 2 (list-ref (list-ref matrix x) (+ y 1)))(= 1 (list-ref (list-ref matrix x) (+ y 1))))              (= 0 (list-ref (list-ref matrix x) (+ y 2)))) (get-valid-moves-aux  x (+ y 2)matrix #t) void )
   (if (and (validate-position (+ x 2) y)       (or(= 2 (list-ref (list-ref matrix (+ x 1)) y))(= 1 (list-ref (list-ref matrix (+ x 1)) y)))              (= 0 (list-ref (list-ref matrix (+ x 2)) y))) (get-valid-moves-aux (+ x 2) y matrix #t)  void )
   (if (and (validate-position (+ x 2) (- y 2)) (or(= 2 (list-ref (list-ref matrix (+ x 1)) (- y 1)))(= 1 (list-ref (list-ref matrix (+ x 1)) (- y 1))))  (= 0 (list-ref (list-ref matrix (+ x 2)) (- y 2)))) (get-valid-moves-aux (+ x 2) (- y 2) matrix #t) void )
-  (if (and (validate-position x (- y 2))       (or(= 2 (list-ref (list-ref matrix x) (- y 1)))(= 1 (list-ref (list-ref matrix x) (- y 1))))              (= 0 (list-ref (list-ref matrix x) (- y 2)))) (get-valid-moves-aux x (- y 2) matrix #t) void )
-  
-  )
+  (if (and (validate-position x (- y 2))       (or(= 2 (list-ref (list-ref matrix x) (- y 1)))(= 1 (list-ref (list-ref matrix x) (- y 1))))              (= 0 (list-ref (list-ref matrix x) (- y 2)))) (get-valid-moves-aux x (- y 2) matrix #t) void ))
 
 
-        
+; Name:          verify-ending-pieces
+; Description:   This function verifies if the piece is at the end spot and then set the weigth to 0
+; Input:   
+;         index  = The index of the list
+; Output: None
+; Restrictions: None
 (define (verify-ending-pieces index)
   (cond[(> index 9) empty]
        [(and (= (second(list-ref list-of-tiles index)) 0) (= (third(list-ref list-of-tiles index)) 6))
@@ -247,53 +334,44 @@
 
 ;(define ms (current-inexact-milliseconds))
 
+; Name:          run-AI
+; Description:   This is the AI algorithm
+; Input:  None
+; Output: None
+; Restrictions: None
 (define (run-AI)
   ;(set! ms (current-inexact-milliseconds))
 
-  ;(displayln "Finding all moves...")
   (find-all-moves-function 0 )
-  ;(displayln "Finding best move...")
   (find-best-move 0)
   (verify-ending-pieces 0)
-  ;(displayln "Finding ending pieces...")
-  ;(displayln list-of-tiles)
   (get-best-move 0)
-  ;(display "BEST MOVE INDEX: ")
-  ;(displayln best-move-index)
   (add-one-to-not-best-move 0)
   
   (set! list-of-accumulated-weights (list-set list-of-accumulated-weights best-move-index 0))
-  
   (set! matrix-of-pieces (list-set matrix-of-pieces (second(list-ref list-of-tiles best-move-index)) (list-set (list-ref matrix-of-pieces (second(list-ref list-of-tiles best-move-index))) (third(list-ref list-of-tiles best-move-index)) 0)))
   (set! matrix-of-pieces (list-set matrix-of-pieces (second(first(list-ref list-of-tiles best-move-index))) (list-set (list-ref matrix-of-pieces (second(first(list-ref list-of-tiles best-move-index)))) (third(first(list-ref list-of-tiles best-move-index))) 2)))
-
-  
-  ;(display "Weigth list: ")
-  ;(displayln list-of-accumulated-weights)
-  
-  ;(displayln list-of-tmp-tiles)
   (set! list-of-tmp-tiles (list
                        (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list ) (list )))
 
-  ;(displayln "Matriz")
-  ;(print-matrix matrix-of-pieces)
-  ;(displayln "List of tiles")
-  ;(displayln list-of-tiles)
-  ;(displayln "List of tmp tiles")
-  ;(displayln list-of-tmp-tiles)
-  ;(displayln "Tiempo en ms:")
   ;(displayln (- (current-inexact-milliseconds) ms))
   )
 
+
+; Name:          print-matrix
+; Description:   This funtion prints the matrix
+; Input:  None
+; Output: None
+; Restrictions: None
 (define (print-matrix matrix-of-pieces-tmp)
   (cond [( empty? matrix-of-pieces-tmp) empty]
         [else (displayln (first matrix-of-pieces-tmp))
-  (print-matrix (rest matrix-of-pieces-tmp))]
-  ))
+  (print-matrix (rest matrix-of-pieces-tmp))]))
 
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+; The separation from the logic to the GUI
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -302,22 +380,12 @@
 (define (do-best-move current-position next-position);currentpos and nextpos are both a single nomber (refering list-of-image)
   (cond
     [(equal? first-click #f)
-     ;(list-set 0 tmp-for-swap (list-ref list-of-image next-position))
-     ;(list-set next-position list-of-image (list-ref list-of-image current-position))
-     ;(list-set current-position list-of-image (list-ref tmp-for-swap 0))
      (set! first-click #f)
      (set! second-click #t)
      (set! first-position current-position)
-     ;(displayln "FP")
-     ;(displayln first-position)
-     ;(displayln "----")
      (set! second-position next-position)
-     (change-color)
-     ;(displayln list-of-image)
-     ]
-    [else empty]
-    )
-  )
+     (change-color)]
+    [else empty]))
 
 ;Get a pair and returns a single index for list logic
 (define (to-single-index lst)
@@ -341,13 +409,8 @@
     )
   )
 
-;FUNCIÓN NO TERMINADA!!!!! ES NECESARIO HACER QUE SE SELECCIONE LA FICHA QUE LA IA VA A JUGAR--------------
-;QUE SE HAGA UN "CLIC" desde la lógica
 (define (do-IA)
   (run-AI)
-  ;(displayln "rastreo")
-  ;(displayln (first (get-swaping-indexes)))
-  ;(displayln "rastreo---")
   (do-best-move (first (get-swaping-indexes)) (second (get-swaping-indexes)))
   (set! list-of-tiles (list-set list-of-tiles best-move-index (list (first(list-ref list-of-tiles best-move-index)) (second(first(list-ref list-of-tiles best-move-index)))(third(first(list-ref list-of-tiles best-move-index))))))
   )
