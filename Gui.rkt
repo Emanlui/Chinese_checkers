@@ -16,16 +16,16 @@
                           '(2 2 2 2 0 0 0 0 0 0))); 9
 
 (define matrix-of-weights (list
-                          '(0 0 1 2 2 10 50 60 70 99)
-                          '(0 0 1 2 8  9 10 50 60 70)
-                          '(1 1 1 2 7  8  9 12 50 60)
+                          '(-inf.0 -inf.0 1 2 2 10 50 70 85 99)
+                          '(-inf.0 -inf.0 1 2 8  9 10 50 70 80)
+                          '(1 1 1 2 7  8 11 12 50 70)
                           '(1 2 4 5 6  7  8  9 10 50)
                           '(1 2 3 4 5  6  7  8  9 10)
                           '(1 1 2 3 4  5  6  7  2  2)
                           '(0 1 1 2 3  4  5  2  2  2)
                           '(0 0 1 1 2  3  4  1  1  1)
-                          '(0 0 0 1 1  2  3  1  0 0)
-                          '(0 0 0 0 1  1  1  1  0 0)))
+                          '(0 0 0 1 1  2  3  1  -inf.0 -inf.0)
+                          '(0 0 0 0 1  1  1  1  -inf.0 -inf.0)))
 
 (define list-of-accumulated-weights (list 0 0 0 0 0 0 0 0 0 0))
 (define list-of-valid-moves (list ))
@@ -213,7 +213,7 @@
               (verify-ending-pieces (+ 1 index))]
        [(and (= (second(list-ref list-of-tiles index)) 0) (= (third(list-ref list-of-tiles index)) 8))
     
-        (set! list-of-tiles(list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (list-set (first(list-ref list-of-tiles index)) 0 0 ))))
+        (set! list-of-tiles(list-set list-of-tiles index (list-set (list-ref list-of-tiles index) 0 (list-set (first(list-ref list-of-tiles index)) 0 5 ))))
               (verify-ending-pieces (+ 1 index))]
        [(and (= (second(list-ref list-of-tiles index)) 0) (= (third(list-ref list-of-tiles index)) 9))
      
@@ -245,10 +245,10 @@
               (verify-ending-pieces (+ 1 index))]
        [else (verify-ending-pieces (+ 1 index))]))
 
-(define ms (current-inexact-milliseconds))
+;(define ms (current-inexact-milliseconds))
 
 (define (run-AI)
-  (set! ms (current-inexact-milliseconds))
+  ;(set! ms (current-inexact-milliseconds))
 
   ;(displayln "Finding all moves...")
   (find-all-moves-function 0 )
@@ -281,8 +281,8 @@
   ;(displayln list-of-tiles)
   ;(displayln "List of tmp tiles")
   ;(displayln list-of-tmp-tiles)
-  (displayln "Tiempo en ms:")
-  (displayln (- (current-inexact-milliseconds) ms))
+  ;(displayln "Tiempo en ms:")
+  ;(displayln (- (current-inexact-milliseconds) ms))
   )
 
 (define (print-matrix matrix-of-pieces-tmp)
